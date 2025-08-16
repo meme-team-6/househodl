@@ -235,8 +235,7 @@ export function Invite() {
             <div className="bg-muted/50 rounded-lg p-4">
               <h3 className="font-semibold mb-2">{mockInviteData.groupName}</h3>
               <div className="text-sm text-muted-foreground space-y-1">
-                <div>📍 {mockInviteData.location}</div>
-                <div>📅 {mockInviteData.dates}</div>
+            
                 <div>👥 {mockInviteData.memberCount} members</div>
               </div>
             </div>
