@@ -223,6 +223,28 @@ function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Final CTA */}
+        <section className="px-6 py-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-bold mb-4">Let's Make Group Expenses Fun Again! 🎉</h2>
+            <p className="text-muted-foreground mb-8">
+              No more awkward money conversations or spreadsheet headaches. Join your friends in making group expenses simple, fair, and even profitable. 
+              Your future self will thank you! ✨
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/home-filled">
+                <Button size="lg" className="w-full sm:w-auto">
+                  Sign up
+                </Button>
+              </Link>
+           
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Free to try • No hidden fees • Built with love for groups like yours 💜
+            </p>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
