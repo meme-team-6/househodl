@@ -8,6 +8,6 @@ contract CounterTest is Test {
     StorageUnit public storageUnit;
 
     function setUp() public {
-        storageUnit = new StorageUnit();
+        storageUnit = new StorageUnit(address(this));
     }
 }

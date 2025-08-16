@@ -12,5 +12,7 @@ remappings = [
     '@layerzerolabs/lz-evm-messagelib-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/messagelib/',
     '@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/',
     'solidity-bytes-utils/=lib/solidity-bytes-utils/',
+    '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
+    '@layerzerolabs/oapp-upgradeable/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/'
 ]
 

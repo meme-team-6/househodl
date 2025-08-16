@@ -19,7 +19,11 @@ contract Satellite is OApp, OAppOptionsType3 {
     constructor(
         address _endpoint,
         address _owner
-    ) OApp(_endpoint, _owner) Ownable(_owner) {}
+    ) OApp(_endpoint, _owner) {
+        if (_owner != _msgSender()) {
+            _transferOwnership(_owner);
+        }
+    }
 
     /**
      * @notice Quotes the gas needed to pay for the full omnichain transaction in native gas or ZRO token.

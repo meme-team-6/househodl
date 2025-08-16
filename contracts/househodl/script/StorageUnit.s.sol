@@ -12,7 +12,7 @@ contract CounterScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        storageUnit = new StorageUnit();
+        storageUnit = new StorageUnit(msg.sender);
 
         vm.stopBroadcast();
     }

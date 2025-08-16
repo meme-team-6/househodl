@@ -9,7 +9,10 @@
 	url = git@github.com:layerzero-labs/devtools
 [submodule "contracts/househodl/lib/openzeppelin-contracts"]
 	path = contracts/househodl/lib/openzeppelin-contracts
-	url = git@github.com:OpenZeppelin/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 [submodule "contracts/househodl/lib/LayerZero-v2"]
 	path = contracts/househodl/lib/LayerZero-v2
-	url = git@github.com:layerzero-labs/LayerZero-v2
+	url = https://github.com/LayerZero-Labs/LayerZero-v2
+[submodule "contracts/househodl/lib/openzeppelin-contracts-upgradeable"]
+	path = contracts/househodl/lib/openzeppelin-contracts-upgradeable
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable

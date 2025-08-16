@@ -1,39 +1,32 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
-import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import { OApp, MessagingFee, Origin } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
+import { CreateHodl, HodlCreated, AddUserToHodl } from "./Messages.sol";
+import { StorageUnit } from "./StorageUnit.sol";
 
-import {CreateHodl, HodlCreated, AddUserToHodl} from "./Messages.sol";
+contract MasterTransactionManager is OApp {
+    StorageUnit public storageUnit;
+    
+    uint16 internal constant SEND = 1;
+    
+    error InvalidStorageUnit();
 
-
-contract MasterTransactionManager is OApp, OAppOptionsType3 {
-    struct Hodl {
-        bytes12 id;
-        address[] users;
+    constructor(address _endpoint, address _owner, address _storageUnit)
+        OApp(_endpoint, _owner)
+    {
+        if (_storageUnit == address(0)) revert InvalidStorageUnit();
+        storageUnit = StorageUnit(_storageUnit);
     }
 
-    Hodl[] internal hodls;
-    mapping(address => bytes32) internal mapUserToEid;
-
-
     function createHodl(CreateHodl memory params) public returns (HodlCreated memory) {
-        require(hodls.length < (2**12 - 1), "Hodl pool full"); // Ensure we don't overflow the bytes12 ID
+        uint256 hodlCount = storageUnit.getHodlCount();
+        require(hodlCount < (2**12 - 1), "Hodl pool full"); // Ensure we don't overflow the bytes12 ID
         require(params.initialUser != address(0), "Initial user cannot be zero address");
 
-        bytes12 newHodlId = bytes12(uint96( hodls.length));
+        bytes12 newHodlId = bytes12(uint96(hodlCount));
 
-        // Create a new Hodl instance, and add it to the hodls array
-        address[] memory initialUsers = new address[](1);
-        initialUsers[0] = params.initialUser;
-        Hodl memory newHodl = Hodl({
-            id: newHodlId, // Simple ID generation
-            users: initialUsers
-        });
-
-        hodls.push(newHodl);
-        mapUserToEid[params.initialUser] = params.initialUserChainId;
+        storageUnit.createHodl(newHodlId, params.initialUser, params.initialUserChainId);
 
         return HodlCreated({
             hodleId: newHodlId
@@ -42,30 +35,18 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
 
     function addUserToHodl(AddUserToHodl memory params) public {
         // Only the first user can add new users
-        require(hodls.length - 1 >= uint96(params.hodlId), "Hodl does not exist");
-        Hodl storage hodl = hodls[uint96(params.hodlId)];
-        require(hodl.users[0] == msg.sender, "Only the first user can add new users");
+        address[] memory users = storageUnit.getHodlUsers(params.hodlId);
+        require(users.length > 0, "Hodl does not exist");
+        require(users[0] == msg.sender, "Only the first user can add new users");
         require(params.newUser != address(0), "New user cannot be zero address");
         require(params.invitingUser != address(0), "Inviting user cannot be zero address");
 
         // Add the new user to the hodl
-        hodl.users.push(params.newUser);
-        mapUserToEid[params.newUser] = params.hodlId;
+        storageUnit.addUserToHodl(params.hodlId, params.newUser, params.chainEndpointId);
     }
 
 
 
-
-    /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
-    uint16 public constant SEND = 1;
-
-    /// @notice Initialize with Endpoint V2 and owner address
-    /// @param _endpoint The local chain's LayerZero Endpoint V2 address
-    /// @param _owner    The address permitted to configure this OApp
-    constructor(
-        address _endpoint,
-        address _owner
-    ) OApp(_endpoint, _owner) Ownable(_owner) {}
 
     // ──────────────────────────────────────────────────────────────────────────────
     // 0. (Optional) Quote business logic
@@ -94,7 +75,7 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
         fee = _quote(
             _dstEid,
             _message,
-            combineOptions(_dstEid, SEND, _options),
+            _options,
             _payInLzToken
         );
     }
@@ -136,7 +117,7 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
         _lzSend(
             _dstEid,
             _message,
-            combineOptions(_dstEid, SEND, _options),
+            _options,
             MessagingFee(msg.value, 0),
             payable(msg.sender)
         );
