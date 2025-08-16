@@ -1,0 +1,4 @@
+encryptionsalt: v1:GB/i8zzQIII=:v1:b/hMob/Cm8hber5d:/3EiXN8Zna3m9qptEwr5CloMuJ9sCQ==
+config:
+  aws:profile: rebnz
+  app:zone_domain: househodl.app

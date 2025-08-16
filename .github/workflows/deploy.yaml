@@ -1,0 +1,70 @@
+name: Build and Deploy Application
+
+on:
+  workflow_call:
+    inputs:
+      stack:
+        required: true
+        type: string
+
+      aws_profile:
+        required: true
+        type: string
+
+      aws_region:
+        default: ap-southeast-2
+        type: string
+
+      stack_bucket_name:
+        required: true
+        type: string
+    
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  update:
+    name: Update
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4.0.2
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Configure AWS Credentials
+        run: |
+          aws configure set --profile ${{ inputs.aws_profile }} region ${{ inputs.aws_region }}
+          aws configure set --profile ${{ inputs.aws_profile }} aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set --profile ${{ inputs.aws_profile }} aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - run: pnpm install
+      - run: pnpm run build --cache-dir .turbo
+      - name: Install pulumi deps
+        run: pnpm install --shamefully-hoist
+        working-directory: ./infra
+      - uses: pulumi/actions@v6
+        with:
+          work-dir: ./infra
+          command: up
+          stack-name: ${{ inputs.stack }}
+          cloud-url: s3://${{ inputs.stack_bucket_name }}?region=${{ inputs.aws_region }}&awssdk=v2&profile=${{ inputs.aws_profile }}
+          secrets-provider: awskms://cd919432-a89a-449b-95b7-496e8a651b9a?region=${{ inputs.aws_region }}&profile=${{ inputs.aws_profile }}&awssdk=v2
+        env:
+          AWS_REGION: ${{ inputs.aws_region }}
+          PULUMI_CONFIG_PASSPHRASE: ""
