@@ -10,6 +10,7 @@ import GroupCreate from './GroupCreate'
 import GroupManagement from './GroupManagement'
 import GroupTransaction from './GroupTransaction'
 import { Invite } from './Invite'
+import { InviteInvalid } from './InviteInvalid'
 
 // Force dark mode regardless of user's system preference
 document.documentElement.classList.add('dark')
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
   {
     path: '/invite/:id',
     element: <Invite />,
+  },
+  {
+    path: '/invite',
+    element: <InviteInvalid />,
   },
   {
     path: '/login',
