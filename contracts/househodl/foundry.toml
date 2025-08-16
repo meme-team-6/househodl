@@ -13,6 +13,10 @@ remappings = [
     '@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/',
     'solidity-bytes-utils/=lib/solidity-bytes-utils/',
     '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
-    '@layerzerolabs/oapp-upgradeable/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/'
+    '@layerzerolabs/oapp-upgradeable/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/',
+    '@layerzerolabs/test-devtools-evm-foundry/=lib/devtools/packages/test-devtools-evm-foundry',
+    '@openzeppelin/contracts/utils/ReentrancyGuard.sol=lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol',
+    '@openzeppelin/contracts/utils/Pausable.sol=lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol',
+    '@layerzerolabs/lz-evm-v1-0.7/='
 ]
 
