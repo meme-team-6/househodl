@@ -1,81 +1,135 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Landing from './Landing'
-import Signup from './Signup'
-import App from './App'
-import AppWithGroups from './AppWithGroups'
-import GroupCreate from './GroupCreate'
-import GroupManagement from './GroupManagement'
-import GroupTransaction from './GroupTransaction'
-import { Invite } from './Invite'
-import { InviteInvalid } from './InviteInvalid'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
+import Landing from "./Landing";
+import App from "./App";
+import AppWithGroups from "./AppWithGroups";
+import GroupCreate from "./GroupCreate";
+import GroupManagement from "./GroupManagement";
+import GroupTransaction from "./GroupTransaction";
+import { Invite } from "./Invite";
+import { InviteInvalid } from "./InviteInvalid";
+import {
+  DynamicContextProvider,
+  DynamicUserProfile,
+  overrideNetworkRpcUrl,
+  useIsLoggedIn,
+} from "@dynamic-labs/sdk-react-core";
+
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 
 // Force dark mode regardless of user's system preference
-document.documentElement.classList.add('dark')
+document.documentElement.classList.add("dark");
 
 // Prevent system preference from overriding dark mode
 const forceDarkMode = () => {
-  document.documentElement.classList.add('dark')
-}
+  document.documentElement.classList.add("dark");
+};
 
 // Add event listener to ensure dark mode persists
-window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', forceDarkMode)
+window
+  .matchMedia("(prefers-color-scheme: light)")
+  .addEventListener("change", forceDarkMode);
 
 // Initial call to force dark mode
-forceDarkMode()
+forceDarkMode();
+
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const isLoggedIn = useIsLoggedIn();
+
+  if (!isLoggedIn) {
+    return <Navigate to="/" />;
+  }
+  return children;
+};
 
 // Create router with React Router v7
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Landing />,
+  },
+  {
+    path: "/home",
+    element: (
+      <PrivateRoute>
+        <AppWithGroups />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/home-filled",
+    element: (
+      <PrivateRoute>
+        <AppWithGroups />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/group/create",
+    element: (
+      <PrivateRoute>
+        <GroupCreate />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/group/:id/:transactionId",
+    element: (
+      <PrivateRoute>
+        <GroupTransaction />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/group/:id",
+    element: (
+      <PrivateRoute>
+        <GroupManagement />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/invite/:id",
+    element: (
+      <PrivateRoute>
+        <Invite />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/invite",
+    element: (
+      <PrivateRoute>
+        <InviteInvalid />
+      </PrivateRoute>
+    ),
+  },
+]);
 
-  },
-  {
-    path: '/signup',
-    element: <Signup />,
-  },
-  {
-    path: '/home',
-    element: <App />,
+const rpcUrlOverrides = {
+  "1": ["https://ethereum-sepolia.rpc.subquery.network/public"],
+}
 
-  },
-  {
-    path: '/home-filled',
-    element: <AppWithGroups />,
-  },
-  {
-    path: '/group/create',
-    element: <GroupCreate />,
-
-  },
-  {
-    path: '/group/:id/:transactionId',
-    element: <GroupTransaction />,
-
-  },
-  {
-    path: '/group/:id',
-    element: <GroupManagement />,
-  },
-  {
-    path: '/invite/:id',
-    element: <Invite />,
-  },
-  {
-    path: '/invite',
-    element: <InviteInvalid />,
-  },
-  {
-    path: '/login',
-    element: <Signup />,
-  },
-])
-
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
-)
+    <DynamicContextProvider
+      settings={{
+        environmentId: "a45df874-672d-4433-a4e1-fbdd691303ab",
+        walletConnectors: [EthereumWalletConnectors],
+        overrides: {
+          evmNetworks: (networks) =>
+            overrideNetworkRpcUrl(networks, rpcUrlOverrides),
+        },
+      }}
+    >
+      <DynamicUserProfile />
+      <RouterProvider router={router} />
+    </DynamicContextProvider>
+  </StrictMode>
+);
