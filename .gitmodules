@@ -22,3 +22,6 @@
 [submodule "contracts/househodl/lib/aave-v3-periphery"]
 	path = contracts/househodl/lib/aave-v3-periphery
 	url = https://github.com/aave/aave-v3-periphery
+[submodule "contracts/househodl/lib/aave-v3-origin"]
+	path = contracts/househodl/lib/aave-v3-origin
+	url = https://github.com/aave/aave-v3-origin
