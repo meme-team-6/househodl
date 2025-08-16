@@ -42,7 +42,6 @@ const router = createBrowserRouter([
   {
     path: '/home-filled',
     element: <AppWithGroups />,
-x
   },
   {
     path: '/group/create',
