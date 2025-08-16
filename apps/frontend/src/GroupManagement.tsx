@@ -159,7 +159,8 @@ function GroupManagement() {
               <Users className="h-4 w-4 mr-2" />
               Invite Members
             </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" >
+                
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button></div>

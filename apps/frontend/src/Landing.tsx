@@ -15,7 +15,7 @@ function Landing() {
        {/* Top Nav */}
        <header className=" z-10 flex items-center justify-between px-6 py-4 sticky top-0">
         <Link to="/" className="text-lg font-semibold tracking-tight">
-          HouseHodl
+          Househodl
         </Link>
         <div className="space-x-3">
           <Link to="/login">
@@ -47,7 +47,7 @@ function Landing() {
                  <div className="flex justify-center col-span-2 ">
                 <div className="relative">
                   {/* iPhone frame placeholder */}
-                <img src="/hero-1.png" alt="iPhone" className="w-80" />
+                <img src="/hero-1.png" alt="iPhone" className="h-[70vh] w-full max-md:hidden" />
                 </div>
               </div>
            
@@ -63,7 +63,7 @@ function Landing() {
                   className="text-4xl sm:text-6xl font-semibold tracking-tighter"
                 />
                 <p className="mt-4 max-w-xl text-gray-300">
-                  Turn messy receipts and group chats into clear, trackable balances. Finances are handled automatically with crypto, earning you interest on your money in the background.
+                  Turn messy receipts and group chats into clear, trackable balances. Househodl helps you manage group finances automatically with crypto, earning you interest on your money in the background.
                 </p>
                 <div className="mt-6 flex items-center gap-3">
                   <Link to="/home-filled">
