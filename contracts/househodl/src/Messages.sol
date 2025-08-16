@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import {Transaction, TransactionInstruction} from "./Common.sol";
@@ -43,13 +44,29 @@ library MessageEncoder {
     function encodeCreateHodl(
         CreateHodl memory _createHodl
     ) public pure returns (bytes memory) {
-        bytes memory encoded = abi.encode(_createHodl);
-        return abi.encode(MessageType.CREATE_HOLD, encoded);
+        return abi.encode(MessageType.CREATE_HOLD, _createHodl);
     }
 
     function determineType(
         bytes memory packet
     ) public pure returns (MessageType) {
         return abi.decode(packet, (MessageType));
+    }
+
+    function asReconcileTranscation(
+        bytes memory packet
+    ) public pure returns (ReconcileTranscation memory sentMsg) {
+        MessageType _type;
+        (_type, sentMsg) = abi.decode(
+            packet,
+            (MessageType, ReconcileTranscation)
+        );
+    }
+
+    function asCreateHodl(
+        bytes memory packet
+    ) public pure returns (CreateHodl memory sentMsg) {
+        MessageType _type;
+        (_type, sentMsg) = abi.decode(packet, (MessageType, CreateHodl));
     }
 }
