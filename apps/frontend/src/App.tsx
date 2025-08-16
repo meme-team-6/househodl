@@ -37,11 +37,13 @@ function App() {
           title=" AAAA" 
           onMobileMenuClick={handleMobileMenuClick}
         />
-        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10">
+      
+<main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10  w-full max-w-[1200px] mx-auto"><div className="flex justify-between items-center mb-4 flex-wrap">
 
 
 
-<div style={{ width: '100%', height: '600px', position: 'relative' }}>
+<div className="flex justify-between items-center mb-4 flex-wrap w-full">
+<h1 className="text-4xl font-semibold tracking-tighter">Home</h1><a href="/group/create"><Button>Create Group</Button></a></div>
 
   <div style={{ 
     position: 'absolute', 
@@ -60,9 +62,9 @@ function App() {
       onAnimationComplete={handleAnimationComplete}
       className="text-5xl font-semibold tracking-tight"
     />
-<p className="mt-4 text-xl font-light text-gray-400 tracking-tight">
-      Create a group to start managing money</p>
-  <Button className="mt-4 min-w-md">Create Group</Button>
+<p className="mt-4 text-xl max-w-sm mx-auto font-light text-gray-400 tracking-tight text-center">
+      Create a group to start managing shared expenses with your people</p>
+  <Button className="mt-4 min-w-sm">Create Group</Button>
   </div>
 </div>
 
