@@ -94,7 +94,7 @@ export function Invite() {
             </div>
 
             {/* Action button */}
-            <Button onClick={handleAcceptInvitation} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+            <Button onClick={handleAcceptInvitation} className="w-full bg-[#00D57F]">
               Accept Invitation
             </Button>
 
