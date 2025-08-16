@@ -94,11 +94,11 @@ function AppWithGroups() {
           title=" Househodl" 
           onMobileMenuClick={handleMobileMenuClick}
         />
-        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10  w-full max-w-[1200px] mx-auto"><div className="flex justify-between items-center mb-4 flex-wrap">
+        <main className="flex-1 overflow-auto  border-x  w-full max-w-[1200px] mx-auto"><div className="flex justify-between items-center p-6 flex-wrap">
         <h1 className="text-4xl font-semibold tracking-tighter">Home</h1><a href="/group/create"><Button>Create Group</Button></a></div>
-        <section className="grid grid-cols-2 gap- my-4 border-t pt-4 border-b pb-4"><div><h3>Available Balance</h3><FadeContent><p className="text-4xl font-semibold">$0</p></FadeContent></div><div><h3>Invested </h3><FadeContent><p className="text-4xl font-semibold">$0</p></FadeContent></div></section>
-        <h2 className="text-2xl font-bold mb-6 tracking-tight " >0 outstanding transactions</h2>
-        <section className="grid grid-cols-3 gap-4 max-2xl:grid-cols-2 max-lg:grid-cols-1 max-md:grid-cols-1">
+        <section className="grid grid-cols-2  border-t  border-b"><div className="p-6 border-r max-md:border-r-0 max-md:border-b"><h3>Available Balance</h3><FadeContent><p className="text-4xl font-semibold">$0</p></FadeContent></div><div className="p-6"><h3>Invested </h3><FadeContent><p className="text-4xl font-semibold">$0</p></FadeContent></div></section>
+        <h2 className="text-2xl font-bold m-6 tracking-tight " >0 outstanding transactions</h2>
+        <section className="grid grid-cols-3 gap-4 max-2xl:grid-cols-2 max-lg:grid-cols-1 max-md:grid-cols-1 m-6">
           {groupsData.map((group) => (
             <a key={group.id} className="border rounded-lg p-4 bg-background flex flex-col gap-2" href={`/group/${group.id}`}>
               <div>

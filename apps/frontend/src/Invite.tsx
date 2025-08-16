@@ -70,7 +70,7 @@ export function Invite() {
              <Ticket/>
             </div>
             <h1 className="text-2xl font-bold mb-2">You're Invited!</h1>
-            <p className="text-blue-100">{mockInviteData.inviterName} invited you to join</p>
+            <p className="text-blue-100">{mockInviteData.inviterName} invited you to join a group</p>
           </div>
 
           {/* Event details */}
@@ -119,7 +119,7 @@ export function Invite() {
             <Button 
               onClick={() => handleAuthMethod('wallet')} 
               variant="outline" 
-              className="w-full h-16 flex items-center gap-3 text-left"
+              className="w-full h-16 flex items-center justify-start gap-3 text-left"
             >
               <Wallet className="h-6 w-6 text-blue-500" />
               <div>
@@ -131,7 +131,7 @@ export function Invite() {
             <Button 
               onClick={() => handleAuthMethod('email')} 
               variant="outline" 
-              className="w-full h-16 flex items-center gap-3 text-left"
+              className="w-full h-16 flex items-center justify-start gap-3 text-left"
             >
               <Mail className="h-6 w-6 text-green-500" />
               <div>
