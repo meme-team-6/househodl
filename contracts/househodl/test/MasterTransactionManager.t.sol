@@ -8,6 +8,6 @@ contract MasterTransactionManagerTest is Test {
     MasterTransactionManager public masterTransactionManager;
 
     function setUp() public {
-        masterTransactionManager = new MasterTransactionManager();
+        // masterTransactionManager = new MasterTransactionManager();
     }
 }

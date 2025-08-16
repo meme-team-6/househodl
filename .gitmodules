@@ -10,3 +10,6 @@
 [submodule "contracts/househodl/lib/openzeppelin-contracts"]
 	path = contracts/househodl/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "contracts/househodl/lib/LayerZero-v2"]
+	path = contracts/househodl/lib/LayerZero-v2
+	url = https://github.com/layerzero-labs/LayerZero-v2

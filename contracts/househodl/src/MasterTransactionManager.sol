@@ -120,7 +120,6 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
         string memory _string = abi.decode(_message, (string));
 
         // 2. Apply your custom logic. In this example, store it in `lastMessage`.
-        lastMessage = _string;
 
         // 3. (Optional) Trigger further on-chain actions.
         //    e.g., emit an event, mint tokens, call another contract, etc.

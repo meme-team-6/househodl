@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { OApp, Origin, MessagingFee } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
-import { OAppOptionsType3 } from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
+import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MasterTransactionManager is OApp, OAppOptionsType3 {
+contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
     uint16 public constant SEND = 1;
 
     /// @notice Initialize with Endpoint V2 and owner address
     /// @param _endpoint The local chain's LayerZero Endpoint V2 address
     /// @param _owner    The address permitted to configure this OApp
-    constructor(address _endpoint, address _owner) OApp(_endpoint, _owner) Ownable(_owner) {}
+    constructor(
+        address _endpoint,
+        address _owner
+    ) OApp(_endpoint, _owner) Ownable(_owner) {}
 
     // ──────────────────────────────────────────────────────────────────────────────
     // 0. (Optional) Quote business logic
@@ -38,7 +41,12 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
         bytes memory _message = abi.encode(_string);
         // combineOptions (from OAppOptionsType3) merges enforced options set by the contract owner
         // with any additional execution options provided by the caller
-        fee = _quote(_dstEid, _message, combineOptions(_dstEid, SEND, _options), _payInLzToken);
+        fee = _quote(
+            _dstEid,
+            _message,
+            combineOptions(_dstEid, SEND, _options),
+            _payInLzToken
+        );
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -52,7 +60,11 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
     /// @param _dstEid   Destination Endpoint ID (uint32)
     /// @param _string  The string to send
     /// @param _options  Execution options for gas on the destination (bytes)
-    function sendString(uint32 _dstEid, string calldata _string, bytes calldata _options) external payable {
+    function sendString(
+        uint32 _dstEid,
+        string calldata _string,
+        bytes calldata _options
+    ) external payable {
         // 1. (Optional) Update any local state here.
         //    e.g., record that a message was "sent":
         //    sentCount += 1;
@@ -108,7 +120,6 @@ contract MasterTransactionManager is OApp, OAppOptionsType3 {
         string memory _string = abi.decode(_message, (string));
 
         // 2. Apply your custom logic. In this example, store it in `lastMessage`.
-        lastMessage = _string;
 
         // 3. (Optional) Trigger further on-chain actions.
         //    e.g., emit an event, mint tokens, call another contract, etc.

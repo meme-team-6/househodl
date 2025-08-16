@@ -8,6 +8,6 @@ contract CounterTest is Test {
     Satellite public satellite;
 
     function setUp() public {
-        satellite = new Satellite();
+        // satellite = new Satellite();
     }
 }

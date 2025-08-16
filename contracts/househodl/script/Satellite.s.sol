@@ -12,7 +12,7 @@ contract SatelliteScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        satellite = new Satellite();
+        // satellite = new Satellite();
 
         vm.stopBroadcast();
     }
