@@ -15,7 +15,7 @@ enum MessageType {
 
 struct CreateHodl {
     address initialUser;
-    address initialUserChainId;
+    uint32 initialUserEid;
 }
 
 struct HodlCreated {
@@ -26,15 +26,16 @@ struct AddUserToHodl {
     address newUser;
     address invitingUser;
     bytes12 hodlId;
-    address chainEndpointId;
+    uint32 newUserEid;
 }
 
 struct SubmitTransaction {
     bytes12 hodlId;
     Transaction transaction;
+    uint32 userEid;
 }
 
-struct ReconcileTranscation {
+struct ReconcileTransaction {
     bytes12 hodlId;
     TransactionInstruction[] transactionInstructions;
 }
@@ -54,11 +55,11 @@ library MessageEncoder {
 
     function asReconcileTranscation(
         bytes memory packet
-    ) public pure returns (ReconcileTranscation memory sentMsg) {
+    ) public pure returns (ReconcileTransaction memory sentMsg) {
         MessageType _type;
         (_type, sentMsg) = abi.decode(
             packet,
-            (MessageType, ReconcileTranscation)
+            (MessageType, ReconcileTransaction)
         );
     }
 
