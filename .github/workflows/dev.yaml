@@ -1,0 +1,20 @@
+name: Build and Deploy Dev
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy.yaml
+    concurrency:
+      cancel-in-progress: false
+      group: pulumi-dev
+    with:
+      stack: organization/ethglobal-25/dev
+      aws_profile: rebnz
+      stack_bucket_name: reb-pulumistacks
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
