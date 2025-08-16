@@ -23,7 +23,7 @@ export function InviteInvalid() {
           <div className="min-h-screen flex items-center justify-center p-4">
             <div className="max-w-md w-full">
               {/* Invalid invitation card */}
-              <div className="bg-[#111]/20 rounded-2xl shadow-xl overflow-hidden border-gray-950">
+              <div className="bg-[#111]/20 rounded-2xl shadow-xl overflow-hidden border-gray-750 border">
                 {/* Header with warning icon */}
                 <div className="px-6 py-8 text-white text-center">
                   <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
@@ -62,14 +62,7 @@ export function InviteInvalid() {
                       </Button>
                     </Link>
                     
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
-                      onClick={() => window.history.back()}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Go Back
-                    </Button>
+                  
                   </div>
 
                   <p className="text-xs text-center text-gray-500 mt-4">

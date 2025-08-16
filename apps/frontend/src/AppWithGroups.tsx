@@ -1,11 +1,8 @@
-import { Sidebar } from "@/components/sidebar"
+
 import { Header } from "@/components/header"
-import BlurText from "./components/BlurText";
-import Orb from './components/Orb';
-import { LineChart, DollarSign, ArrowUpRight, ArrowDownRight, Clock, Briefcase } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AvatarCircles } from "@/components/magicui/avatar-circles";
+import FadeContent from "./components/ui/FadeContent";
 
 
 // Extend Window interface to include our custom property
@@ -99,7 +96,7 @@ function AppWithGroups() {
         />
         <main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10  w-full max-w-[1200px] mx-auto"><div className="flex justify-between items-center mb-4 flex-wrap">
         <h1 className="text-4xl font-semibold tracking-tighter">Home</h1><a href="/group/create"><Button>Create Group</Button></a></div>
-        <section className="grid grid-cols-2 gap- my-4 border-t pt-4 border-b pb-4"><div><h3>Available Balance</h3><p className="text-4xl font-semibold">$0</p></div><div><h3>Invested </h3><p className="text-4xl font-semibold">$0</p></div></section>
+        <section className="grid grid-cols-2 gap- my-4 border-t pt-4 border-b pb-4"><div><h3>Available Balance</h3><FadeContent><p className="text-4xl font-semibold">$0</p></FadeContent></div><div><h3>Invested </h3><FadeContent><p className="text-4xl font-semibold">$0</p></FadeContent></div></section>
         <h2 className="text-2xl font-bold mb-6 tracking-tight " >0 outstanding transactions</h2>
         <section className="grid grid-cols-3 gap-4 max-2xl:grid-cols-2 max-lg:grid-cols-1 max-md:grid-cols-1">
           {groupsData.map((group) => (
