@@ -6,24 +6,36 @@ import {IPriceOracle} from "@aave-v3-core/contracts/interfaces/IPriceOracle.sol"
 import {IWrappedTokenGatewayV3} from "@aave-v3-periphery/contracts/misc/interfaces/IWrappedTokenGatewayV3.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import {AaveTokenInfo} from "./AaveTokenInfo.sol";
+
 /// @title Aave Multi-Token Supply & Borrow Example
 /// @notice Allows supplying and borrowing any supported ERC20 token, and also supports native tokens (ETH/AVAX/MATIC) via gateway
 interface IAaveOracle {
     function getAssetPrice(address asset) external view returns (uint256);
 }
 
+event Supply(address indexed token, uint256 amount, uint256 aTokenBalance);
+
 contract AaveMultiTokenManager {
     IPool public immutable pool;
     IWrappedTokenGatewayV3 public immutable wethGateway;
     IAaveOracle public immutable aaveOracle;
     address public immutable usdc;
-    constructor(address _pool, address _wethGateway, address _oracle, address _usdc) {
+    AaveTokenInfo public immutable tokenInfo;
+
+    constructor(
+        address _pool,
+        address _wethGateway,
+        address _oracle,
+        address _usdc,
+        address _tokenInfo
+    ) {
         pool = IPool(_pool);
         wethGateway = IWrappedTokenGatewayV3(_wethGateway);
         aaveOracle = IAaveOracle(_oracle);
         usdc = _usdc;
+        tokenInfo = AaveTokenInfo(_tokenInfo);
     }
-
 
     /// @notice Borrow USDC directly from Aave
     /// @param amount Amount of USDC to borrow
@@ -57,6 +69,9 @@ contract AaveMultiTokenManager {
         IERC20(asset).transferFrom(msg.sender, address(this), amount);
         IERC20(asset).approve(address(pool), amount);
         pool.supply(asset, amount, address(this), 0);
+        (address aToken,,) = tokenInfo.getATokenAndDebtTokens(asset);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
+        emit Supply(asset, amount, aTokenBalance);
     }
 
     function Stake(uint256 amount, bytes12 hodlId, address stakingToken) external {
