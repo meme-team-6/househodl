@@ -4,6 +4,10 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.tsx'
 import Login from './Login.tsx'
+import Signup from './Signup.tsx'
+import GroupCreate from './GroupCreate.tsx'
+import Landing from './Landing.tsx'
+import AppWithGroups from './AppWithGroups.tsx'
 
 // Force dark mode regardless of user's system preference
 document.documentElement.classList.add('dark')
@@ -23,12 +27,35 @@ forceDarkMode()
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Login />,
+    element: <Landing />,
 
+  },
+  {
+    path: '/signup',
+    element: <Signup />,
   },
   {
     path: '/home',
     element: <App />,
+
+  },
+  {
+    path: '/home-filled',
+    element: <AppWithGroups />,
+x
+  },
+  {
+    path: '/group/create',
+    element: <GroupCreate />,
+
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/signup',
+    element: <Signup />,
   },
 ])
 

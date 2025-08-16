@@ -31,7 +31,7 @@ function App() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar defaultCollapsed={false} />
+     
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header 
           title=" AAAA" 
@@ -42,12 +42,7 @@ function App() {
 
 
 <div style={{ width: '100%', height: '600px', position: 'relative' }}>
-  <Orb
-    hoverIntensity={0.5}
-    rotateOnHover={true}
-    hue={0}
-    forceHoverState={true}
-  />
+
   <div style={{ 
     position: 'absolute', 
     top: '50%', 
@@ -56,15 +51,18 @@ function App() {
     zIndex: 10,
     textAlign: 'center'
   }}>
-    <p className="font-normal tracking-tight text-xl mb-2">heading</p>
+
     <BlurText
-      text="Something cool"
+      text="You have no groups"
       delay={150}
       animateBy="words"
       direction="top"
       onAnimationComplete={handleAnimationComplete}
       className="text-5xl font-semibold tracking-tight"
     />
+<p className="mt-4 text-xl font-light text-gray-400 tracking-tight">
+      Create a group to start managing money</p>
+  <Button className="mt-4 min-w-md">Create Group</Button>
   </div>
 </div>
 
