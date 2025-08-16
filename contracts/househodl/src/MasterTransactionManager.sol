@@ -12,6 +12,16 @@ contract MasterTransactionManager is OApp {
     
     error InvalidStorageUnit();
 
+    struct UserWithEid {
+        address user;
+        address eid;
+    }
+
+    struct HodlInfo {
+        bytes12 id;
+        UserWithEid[] users;
+    }
+
     constructor(address _endpoint, address _owner, address _storageUnit)
         OApp(_endpoint, _owner)
     {
@@ -45,7 +55,65 @@ contract MasterTransactionManager is OApp {
         storageUnit.addUserToHodl(params.hodlId, params.newUser, params.chainEndpointId);
     }
 
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Public read functions - exposing StorageUnit functions
+    // ──────────────────────────────────────────────────────────────────────────────
 
+    function getHodlCount() external view returns (uint256) {
+        return storageUnit.getHodlCount();
+    }
+
+    function getHodlUsers(bytes12 hodlId) external view returns (address[] memory) {
+        return storageUnit.getHodlUsers(hodlId);
+    }
+
+    function mapUserToEid(address user) external view returns (address) {
+        return storageUnit.mapUserToEid(user);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Convenience functions for reading data
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function getHodlUsersWithEid(bytes12 hodlId) external view returns (UserWithEid[] memory) {
+        address[] memory users = storageUnit.getHodlUsers(hodlId);
+        UserWithEid[] memory usersWithEid = new UserWithEid[](users.length);
+        
+        for (uint256 i = 0; i < users.length; i++) {
+            usersWithEid[i] = UserWithEid({
+                user: users[i],
+                eid: storageUnit.mapUserToEid(users[i])
+            });
+        }
+        
+        return usersWithEid;
+    }
+
+    function getUserHodls(address user) external view returns (bytes12[] memory) {
+        uint256 hodlCount = storageUnit.getHodlCount();
+        bytes12[] memory tempHodls = new bytes12[](hodlCount);
+        uint256 userHodlCount = 0;
+        
+        for (uint256 i = 0; i < hodlCount; i++) {
+            bytes12 hodlId = bytes12(uint96(i));
+            address[] memory users = storageUnit.getHodlUsers(hodlId);
+            
+            for (uint256 j = 0; j < users.length; j++) {
+                if (users[j] == user) {
+                    tempHodls[userHodlCount] = hodlId;
+                    userHodlCount++;
+                    break;
+                }
+            }
+        }
+        
+        bytes12[] memory userHodls = new bytes12[](userHodlCount);
+        for (uint256 i = 0; i < userHodlCount; i++) {
+            userHodls[i] = tempHodls[i];
+        }
+        
+        return userHodls;
+    }
 
 
     // ──────────────────────────────────────────────────────────────────────────────
