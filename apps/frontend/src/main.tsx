@@ -8,6 +8,7 @@ import Signup from './Signup.tsx'
 import GroupCreate from './GroupCreate.tsx'
 import Landing from './Landing.tsx'
 import AppWithGroups from './AppWithGroups.tsx'
+import GroupManagement from './GroupManagement.tsx'
 
 // Force dark mode regardless of user's system preference
 document.documentElement.classList.add('dark')
@@ -42,12 +43,16 @@ const router = createBrowserRouter([
   {
     path: '/home-filled',
     element: <AppWithGroups />,
-x
+
   },
   {
     path: '/group/create',
     element: <GroupCreate />,
 
+  },
+  {
+    path: '/group/:id',
+    element: <GroupManagement />,
   },
   {
     path: '/login',

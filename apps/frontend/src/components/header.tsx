@@ -33,7 +33,7 @@ export function Header({
             <span className="sr-only">Toggle Menu</span>
           </Button>
         )}
-        <h1 className="text-lg font-semibold">{title}</h1>
+        <h1 className="text-lg font-semibold tracking-tighter">Househodl</h1>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon">
