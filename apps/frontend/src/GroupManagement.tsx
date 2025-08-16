@@ -224,7 +224,7 @@ function GroupManagement() {
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <a href={`/group/${id}/${activity.id}`} key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
                       <activity.icon className="h-4 w-4 text-primary" />
                     </div>
@@ -246,7 +246,7 @@ function GroupManagement() {
                         <span className="text-xs text-muted-foreground">{activity.timestamp}</span>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </CardContent>

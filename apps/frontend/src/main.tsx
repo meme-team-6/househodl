@@ -5,10 +5,11 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.tsx'
 import Login from './Login.tsx'
 import Signup from './Signup.tsx'
-import GroupCreate from './GroupCreate.tsx'
+import GroupManagement from './GroupManagement.tsx'
+import GroupCreate from './GroupCreate'
+import GroupTransaction from './GroupTransaction.tsx'
 import Landing from './Landing.tsx'
 import AppWithGroups from './AppWithGroups.tsx'
-import GroupManagement from './GroupManagement.tsx'
 
 // Force dark mode regardless of user's system preference
 document.documentElement.classList.add('dark')
@@ -47,6 +48,11 @@ const router = createBrowserRouter([
   {
     path: '/group/create',
     element: <GroupCreate />,
+
+  },
+  {
+    path: '/group/:id/:transactionId',
+    element: <GroupTransaction />,
 
   },
   {
