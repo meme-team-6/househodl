@@ -43,7 +43,6 @@ const router = createBrowserRouter([
   {
     path: '/home-filled',
     element: <AppWithGroups />,
-
   },
   {
     path: '/group/create',

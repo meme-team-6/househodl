@@ -12,7 +12,7 @@ jobs:
       cancel-in-progress: false
       group: pulumi-dev
     with:
-      stack: organization/ethglobal-25/dev
+      stack: organization/househodl/dev
       aws_profile: rebnz
       stack_bucket_name: reb-pulumistacks
     secrets:
