@@ -2,14 +2,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import App from './App.tsx'
-import Login from './Login.tsx'
-import Signup from './Signup.tsx'
-import GroupManagement from './GroupManagement.tsx'
+import Landing from './Landing'
+import Signup from './Signup'
+import App from './App'
+import AppWithGroups from './AppWithGroups'
 import GroupCreate from './GroupCreate'
-import GroupTransaction from './GroupTransaction.tsx'
-import Landing from './Landing.tsx'
-import AppWithGroups from './AppWithGroups.tsx'
+import GroupManagement from './GroupManagement'
+import GroupTransaction from './GroupTransaction'
+import { Invite } from './Invite'
 
 // Force dark mode regardless of user's system preference
 document.documentElement.classList.add('dark')
@@ -60,11 +60,11 @@ const router = createBrowserRouter([
     element: <GroupManagement />,
   },
   {
-    path: '/login',
-    element: <Login />,
+    path: '/invite/:id',
+    element: <Invite />,
   },
   {
-    path: '/signup',
+    path: '/login',
     element: <Signup />,
   },
 ])
