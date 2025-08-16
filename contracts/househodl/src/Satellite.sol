@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {MessageType, MessageEncoder} from "./Messages.sol";
 
 contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
@@ -30,18 +31,18 @@ contract Satellite is OApp, OAppOptionsType3 {
     /**
      * @notice Quotes the gas needed to pay for the full omnichain transaction in native gas or ZRO token.
      * @param _dstEid Destination chain's endpoint ID.
-     * @param _string The string to send.
+     * @param _packet The string to send.
      * @param _options Message execution options (e.g., for sending gas to destination).
      * @param _payInLzToken Whether to return fee in ZRO token.
      * @return fee A `MessagingFee` struct containing the calculated gas fee in either the native token or ZRO token.
      */
-    function quoteSendString(
+    function quotePacket(
         uint32 _dstEid,
-        string calldata _string,
+        bytes calldata _packet,
         bytes calldata _options,
         bool _payInLzToken
     ) public view returns (MessagingFee memory fee) {
-        bytes memory _message = abi.encode(_string);
+        bytes memory _message = abi.encode(_packet);
         // combineOptions (from OAppOptionsType3) merges enforced options set by the contract owner
         // with any additional execution options provided by the caller
         fee = _quote(
@@ -94,19 +95,10 @@ contract Satellite is OApp, OAppOptionsType3 {
             _dstEid,
             _message,
             combineOptions(_dstEid, SEND, _options),
-            MessagingFee(msg.value, 0),
-            payable(msg.sender)
+            MessagingFee(address(this).balance, 0),
+            payable(address(this))
         );
     }
-
-    // ──────────────────────────────────────────────────────────────────────────────
-    // 2. Receive business logic
-    //
-    // Override _lzReceive to decode the incoming bytes and apply your logic.
-    // The base OAppReceiver.lzReceive ensures:
-    //   • Only the LayerZero Endpoint can call this method
-    //   • The sender is a registered peer (peers[srcEid] == origin.sender)
-    // ──────────────────────────────────────────────────────────────────────────────
 
     /// @notice Invoked by OAppReceiver when EndpointV2.lzReceive is called
     /// @dev   _origin    Metadata (source chain, sender address, nonce)
@@ -121,48 +113,12 @@ contract Satellite is OApp, OAppOptionsType3 {
         address /*_executor*/,
         bytes calldata /*_extraData*/
     ) internal override {
-        // 1. Decode the incoming bytes into the combined string "<MESSAGE>:<DATA>"
-        string memory combined = abi.decode(_message, (string));
+        MessageType msgType = MessageEncoder.determineType(_message);
 
-        // 2. Split on the first ':' character to get message type and data
-        (string memory msgType, string memory data) = _splitOnColon(combined);
-
-        // 3. Emit an event with the parsed payload; downstream apps can react to it.
-        emit MessageReceived(msgType, data);
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────────
-    // Internal helpers
-    // ──────────────────────────────────────────────────────────────────────────────
-
-    function _splitOnColon(
-        string memory s
-    ) internal pure returns (string memory left, string memory right) {
-        bytes memory b = bytes(s);
-        uint256 len = b.length;
-        for (uint256 i = 0; i < len; i++) {
-            if (b[i] == bytes(":")[0]) {
-                // left = s[0:i], right = s[i+1:len]
-                left = _substring(b, 0, i);
-                // avoid underflow if ':' is the last char
-                right = i + 1 < len ? _substring(b, i + 1, len) : "";
-                return (left, right);
-            }
-        }
-        // If no ':' found, return empty left and the whole string as right
-        return ("", s);
-    }
-
-    function _substring(
-        bytes memory strBytes,
-        uint256 start,
-        uint256 end
-    ) internal pure returns (string memory) {
-        require(end >= start, "bad range");
-        bytes memory result = new bytes(end - start);
-        for (uint256 i = start; i < end; i++) {
-            result[i - start] = strBytes[i];
-        }
-        return string(result);
+        // if (msgType == MessageType.STRING) {
+        // (string memory left, string memory right) = MessageEncoder.;
+        // emit MessageReceived(left, right);
+        // }
+        // Add more cases as needed
     }
 }

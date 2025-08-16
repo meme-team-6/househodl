@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import {Transaction, TransactionInstruction} from "./Common.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
-enum Messages {
+enum MessageType {
     CREATE_HOLD,
     HODL_CREATED,
     JOIN_HODL,
@@ -37,17 +40,33 @@ struct ReconcileTranscation {
     TransactionInstruction[] transactionInstructions;
 }
 
-abstract contract IMessageEncoder {
-    function createPacket(
-        Messages message,
-        bytes memory packet
-    ) internal pure returns (bytes memory) {
-        return abi.encodePacked(Stringuint16(message));
-    }
-
+library MessageEncoder {
     function encodeCreateHodl(
         CreateHodl memory _createHodl
-    ) internal pure returns (bytes memory) {
-        bytes memory encoded = abi.encode(_createHodl);
+    ) public pure returns (bytes memory) {
+        return abi.encode(MessageType.CREATE_HOLD, _createHodl);
+    }
+
+    function determineType(
+        bytes memory packet
+    ) public pure returns (MessageType) {
+        return abi.decode(packet, (MessageType));
+    }
+
+    function asReconcileTranscation(
+        bytes memory packet
+    ) public pure returns (ReconcileTranscation memory sentMsg) {
+        MessageType _type;
+        (_type, sentMsg) = abi.decode(
+            packet,
+            (MessageType, ReconcileTranscation)
+        );
+    }
+
+    function asCreateHodl(
+        bytes memory packet
+    ) public pure returns (CreateHodl memory sentMsg) {
+        MessageType _type;
+        (_type, sentMsg) = abi.decode(packet, (MessageType, CreateHodl));
     }
 }
