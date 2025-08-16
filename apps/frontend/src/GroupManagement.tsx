@@ -664,19 +664,7 @@ const GroupManagement = () => {
                               className="w-full max-w-md mx-auto rounded-lg border shadow-sm"
                             />
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="w-full max-w-md mx-auto"
-                            onClick={() => {
-                              setReceiptPreview(null);
-                              setExpenseData(prev => ({ ...prev, receipt: null }));
-                              setExpenseStep('upload');
-                            }}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Change Receipt
-                          </Button>
+                         
                         </div>
                       )}
                     </div>
@@ -723,26 +711,38 @@ const GroupManagement = () => {
                             onChange={(e) => handleExpenseInputChange('amount', e.target.value)}
                           />
                         </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Navigation */}
-                  <div className="flex justify-between mt-8">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setExpenseStep('upload')}
-                    >
-                    Cancel
-                    </Button>
-                    <Button 
+                        <div className="flex flex-col gap-2 mt-4"> <Button 
                       onClick={() => setExpenseStep('confirmation')}
                       disabled={!expenseData.businessName || !expenseData.reason || !expenseData.amount}
                     >
                       Review
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
+                        <Button 
+                      variant="outline" 
+                      onClick={() => setExpenseStep('upload')}
+                    >
+                    Cancel
+                    </Button>
+                    <div className="h-[1px] bg-muted-foreground/25 my-4"/>
+                    <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="w-full max-w-md mx-auto"
+                            onClick={() => {
+                              setReceiptPreview(null);
+                              setExpenseData(prev => ({ ...prev, receipt: null }));
+                              setExpenseStep('upload');
+                            }}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Change Receipt
+                          </Button>
+                    </div>   </div>
+                    </div>
                   </div>
+
+              
                 </div>
               )}
 
