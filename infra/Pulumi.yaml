@@ -1,0 +1,7 @@
+name: househodl
+description: Pulumi stack for househodl infrastructure
+runtime: nodejs
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript

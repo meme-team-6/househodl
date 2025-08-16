@@ -1,0 +1,20 @@
+{
+  "name": "househodl-infra",
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "pulumi up"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@pulumi/aws": "^6.83.0",
+    "@pulumi/pulumi": "3.189.0",
+    "@pulumi/command": "^1.1.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
