@@ -40,25 +40,14 @@ function Landing() {
 
       {/* Hero */}
       <main className="relative z-10 flex-1">
-        <div className="relative mx-auto max-w-6xl px-6 py-16">
-          <div className="relative h-[420px] sm:h-[520px]">
+        <div className="relative mx-auto max-w-6xl px-6 py-8">
+          <div className="relative ">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-full items-center">
                  {/* Left side - iPhone mockup placeholder */}
                  <div className="flex justify-center col-span-2 ">
                 <div className="relative">
                   {/* iPhone frame placeholder */}
-                  <div className="w-64 h-[520px] bg-gray-900 rounded-[3rem] p-2 shadow-2xl">
-                    <div className="w-full h-full bg-gray-100 rounded-[2.5rem] overflow-hidden">
-                      {/* Placeholder for app mockup */}
-                      <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                        <div className="text-center text-gray-500">
-                          <div className="w-16 h-16 bg-gray-300 rounded-lg mx-auto mb-4"></div>
-                          <p className="text-sm">App Mockup</p>
-                          <p className="text-xs">Placeholder</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <img src="/hero-1.png" alt="iPhone" className="w-80" />
                 </div>
               </div>
            
@@ -89,13 +78,13 @@ function Landing() {
           </div>
         </div>
     
-        <section className="text-center mb-20"><div className="flex justify-center gap-8 items-center"><p>Powered by </p><img className=" h-10" src="/product/eth.png"/> <img className=" h-10" src="/product/circle.png"/> <img className=" h-10" src="/product/dynamic.png"/>  <img className=" h-10" src="/product/layerzero.png"/> </div></section>
+        <section className="text-center mb-20 mt-12"><div className="flex justify-center gap-8 items-center"><p>Powered by </p><img className=" h-10" src="/product/eth.png"/> <img className=" h-10" src="/product/circle.png"/> <img className=" h-10" src="/product/dynamic.png"/>  <img className=" h-10" src="/product/layerzero.png"/> </div></section>
 
         {/* Features */}
         <section className="px-6 pb-16">
           <div className="mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="rounded-lg border border-border/40 bg-card p-6">
-              <h3 className="font-medium mb-2">Budgeting</h3>
+              <h3 className="font-medium mb-2">Split expenses</h3>
               <p className="text-sm text-muted-foreground">Create budgets and track monthly progress.</p>
             </div>
             <div className="rounded-lg border border-border/40 bg-card p-6">

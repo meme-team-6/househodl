@@ -10,10 +10,10 @@ import LightRays from "./components/ui/LightRays";
 // Mock data for the invitation
 const mockInviteData = {
   id: "beach-house-2025",
-  groupName: " 2025 Hackathon Trip",
+  groupName: "ETHGlobal NYC 2025 ",
   inviterName: "Sarah Chen",
   inviterAvatar: "SC",
-  memberCount: 4,
+  memberCount: 5,
   description: "Split expenses for our upcoming ETHGlobal New York City Trip on the 15th-17th of August 2025",
 
   estimatedCost: "$320"
