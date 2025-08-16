@@ -12,6 +12,15 @@ contract StorageUnit is Ownable {
 
     Hodl[] public hodls;
     mapping(address => address) public mapUserToEid;
+    
+    address public transactionManager;
+    
+    event TransactionManagerUpdated(address indexed oldManager, address indexed newManager);
+    
+    modifier onlyTransactionManager() {
+        require(msg.sender == transactionManager, "StorageUnit: caller is not the transaction manager");
+        _;
+    }
 
     constructor(address initialOwner) Ownable() {
         if (initialOwner != _msgSender()) {
@@ -19,11 +28,17 @@ contract StorageUnit is Ownable {
         }
     }
 
+    function setTransactionManager(address _transactionManager) external onlyOwner {
+        address oldManager = transactionManager;
+        transactionManager = _transactionManager;
+        emit TransactionManagerUpdated(oldManager, _transactionManager);
+    }
+
     function getHodlCount() external view returns (uint256) {
         return hodls.length;
     }
 
-    function createHodl(bytes12 id, address initialUser, address initialUserChainId) external onlyOwner {
+    function createHodl(bytes12 id, address initialUser, address initialUserChainId) external onlyTransactionManager {
         address[] memory initialUsers = new address[](1);
         initialUsers[0] = initialUser;
         Hodl memory newHodl = Hodl({
@@ -34,7 +49,7 @@ contract StorageUnit is Ownable {
         mapUserToEid[initialUser] = initialUserChainId;
     }
 
-    function addUserToHodl(bytes12 hodlId, address newUser, address newUserChainId) external onlyOwner {
+    function addUserToHodl(bytes12 hodlId, address newUser, address newUserChainId) external onlyTransactionManager {
         // Assuming hodlId is the index
         hodls[uint96(hodlId)].users.push(newUser);
         mapUserToEid[newUser] = newUserChainId;
