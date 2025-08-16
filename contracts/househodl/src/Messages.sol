@@ -1,12 +1,13 @@
 pragma solidity ^0.8.13;
 
-import {Share, Transaction} from "./Common.sol";
+import {Share, Transaction, TransactionInstruction} from "./Common.sol";
 
 enum Messages {
     CREATE_HOLD,
     HODL_CREATED,
     JOIN_HODL,
-    SUBMIT_TRANSACTION
+    SUBMIT_TRANSACTION,
+    RECONCILE_TRANSACTION
 }
 
 struct CreateHodl {
@@ -28,4 +29,9 @@ struct AddUserToHodl {
 struct SubmitTransaction {
     bytes12 hodlId;
     Transaction transaction;
+}
+
+struct ReconcileTranscation {
+    bytes12 hodlId;
+    TransactionInstruction[] transactionInstructions;
 }
