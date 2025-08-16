@@ -21,13 +21,6 @@ contract Satellite is OApp, OAppOptionsType3 {
         address _owner
     ) OApp(_endpoint, _owner) Ownable(_owner) {}
 
-    // ──────────────────────────────────────────────────────────────────────────────
-    // 0. (Optional) Quote business logic
-    //
-    // Example: Get a quote from the Endpoint for a cost estimate of sending a message.
-    // Replace this to mirror your own send business logic.
-    // ──────────────────────────────────────────────────────────────────────────────
-
     /**
      * @notice Quotes the gas needed to pay for the full omnichain transaction in native gas or ZRO token.
      * @param _dstEid Destination chain's endpoint ID.
