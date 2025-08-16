@@ -15,7 +15,7 @@ function Landing() {
        {/* Top Nav */}
        <header className=" z-10 flex items-center justify-between px-6 py-4 sticky top-0">
         <Link to="/" className="text-lg font-semibold tracking-tight">
-          Househodl
+      <img src="/logo.svg" alt="Logo" className="h-5 w-auto" />
         </Link>
         <div className="space-x-3">
           <Link to="/login">
@@ -80,20 +80,146 @@ function Landing() {
     
         <section className="text-center mb-20 mt-12"><div className="flex justify-center gap-8 items-center"><p>Powered by </p><img className=" h-10" src="/product/eth.png"/> <img className=" h-10" src="/product/circle.png"/> <img className=" h-10" src="/product/dynamic.png"/>  <img className=" h-10" src="/product/layerzero.png"/> </div></section>
 
-        {/* Features */}
+    
+
+        {/* How It Works */}
         <section className="px-6 pb-16">
-          <div className="mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="rounded-lg border border-border/40 bg-card p-6">
-              <h3 className="font-medium mb-2">Split expenses</h3>
-              <p className="text-sm text-muted-foreground">Create budgets and track monthly progress.</p>
+          <div className="mx-auto max-w-5xl">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+              <p className="text-muted-foreground">Get started with crypto-native expense sharing in three simple steps</p>
             </div>
-            <div className="rounded-lg border border-border/40 bg-card p-6">
-              <h3 className="font-medium mb-2">Insights</h3>
-              <p className="text-sm text-muted-foreground">Visualize trends and discover opportunities.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-primary">1</span>
+                </div>
+                <h3 className="font-semibold mb-2">Create Your Group</h3>
+                <p className="text-sm text-muted-foreground">Create an account and invite friends to join your expense-sharing group.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-primary">2</span>
+                </div>
+                <h3 className="font-semibold mb-2">Pool & Earn</h3>
+                <p className="text-sm text-muted-foreground">Deposit funds into your group. Funds automatically earn interest through DeFi protocols while waiting to be spent.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-primary">3</span>
+                </div>
+                <h3 className="font-semibold mb-2">Vote & Split</h3>
+                <p className="text-sm text-muted-foreground">Submit expenses for group approval. Househodl handles voting, splitting, and payments automatically.</p>
+              </div>
             </div>
-            <div className="rounded-lg border border-border/40 bg-card p-6">
-              <h3 className="font-medium mb-2">Secure</h3>
-              <p className="text-sm text-muted-foreground">Your data stays private with modern security.</p>
+          </div>
+        </section>
+
+        {/* Who It's For */}
+        <section className="px-6 pb-16">
+          <div className="mx-auto max-w-5xl">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Who It's For</h2>
+              <p className="text-muted-foreground">Perfect for groups who want to manage shared expenses efficiently</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold mb-3">Hacker Houses</h3>
+                <p className="text-sm text-muted-foreground">Split rent, utilities, and shared supplies among housemates. Earn yield on security deposits and common funds.</p>
+              </div>
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold mb-3">Travel Groups</h3>
+                <p className="text-sm text-muted-foreground">Manage trip expenses, accommodation costs, and activities. Pool funds in advance and earn interest while planning.</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold mb-3">Crypto Teams</h3>
+                <p className="text-sm text-muted-foreground">Handle project expenses, tool subscriptions, and team activities. Native crypto payments with multi-chain support.</p>
+              </div>
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold mb-3">Event Organizers</h3>
+                <p className="text-sm text-muted-foreground">Coordinate hackathon expenses, conference costs, and team meals. Transparent voting on all group purchases.</p>
+              </div>
+              
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold mb-3">Student Clubs</h3>
+                <p className="text-sm text-muted-foreground">Manage club events, competition fees, and social activities. Pool funds for tournaments, conferences, and team building.</p>
+              </div>
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold mb-3">Small Businesses</h3>
+                <p className="text-sm text-muted-foreground">Manage team expenses, office supplies, and client entertainment. Automated expense approval workflows.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="px-6 pb-16">
+          <div className="mx-auto max-w-5xl">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">What People Are Saying</h2>
+              <p className="text-muted-foreground">Hear from groups already using HouseHodl</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <p className="text-sm text-muted-foreground mb-4">"HouseHodl transformed how our hacker house manages expenses. The yield earning feature means our security deposit is actually growing while we live here. Game changer!"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary">CH</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Connor Hare</p>
+                    <p className="text-xs text-muted-foreground">Hacker House Resident</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <p className="text-sm text-muted-foreground mb-4">"Finally, a crypto-native solution for group expenses. The multi-chain support saved us so much on transaction fees during our European trip."</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary">RB</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Russell Bloxwich</p>
+                    <p className="text-xs text-muted-foreground">Travel Group Organizer</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <p className="text-sm text-muted-foreground mb-4">"The transparent voting system eliminated all arguments about expenses. Everyone can see exactly how decisions are made and funds are allocated."</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary">JM</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Jasper Miller-Waugh</p>
+                    <p className="text-xs text-muted-foreground">Event Organizer</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <p className="text-sm text-muted-foreground mb-4">"As a crypto team, we needed something that understood our workflow. HouseHodl's native Web3 integration is exactly what we were looking for."</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary">DD</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Danuka de Alwis</p>
+                    <p className="text-xs text-muted-foreground">Crypto developer</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

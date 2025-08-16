@@ -102,7 +102,7 @@ function AppWithGroups() {
           {groupsData.map((group) => (
             <a key={group.id} className="border rounded-lg p-4 bg-background flex flex-col gap-2" href={`/group/${group.id}`}>
               <div>
-                <h2 className="text-xl font-semibold text-blue-300 underline mb-2 tracking-tighter">
+                <h2 className="text-xl font-semibold text-[#00D57F] underline mb-2 tracking-tighter">
                   {group.name}
                 </h2>
                 <p className="text-sm text-muted-foreground">

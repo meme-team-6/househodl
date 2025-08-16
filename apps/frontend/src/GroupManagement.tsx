@@ -364,8 +364,8 @@ const GroupManagement = () => {
     avatars: defaultAvatars
   };
 
-  // Mock recent activity data
-  const recentActivity: ActivityItem[] = [
+  // Mock activity data - split into upcoming and past expenses
+  const upcomingExpenses: ActivityItem[] = [
     {
       id: "1",
       type: "expense",
@@ -387,15 +387,6 @@ const GroupManagement = () => {
       icon: Receipt
     },
     {
-      id: "3",
-      type: "member_joined",
-      title: "New member joined",
-      description: "Mike Johnson joined the group",
-      user: "Mike Johnson",
-      timestamp: "2 days ago",
-      icon: UserPlus
-    },
-    {
       id: "4",
       type: "expense",
       title: "Transportation to venue",
@@ -404,16 +395,48 @@ const GroupManagement = () => {
       user: "Emma Davis",
       timestamp: "3 days ago",
       icon: Receipt
+    }
+  ];
+
+  const pastExpenses: ActivityItem[] = [
+    {
+      id: "6",
+      type: "payment",
+      title: "Office rent payment",
+      description: "Monthly office space rental",
+      amount: 800,
+      user: "Alex Chen",
+      timestamp: "1 week ago",
+      icon: Receipt
     },
     {
       id: "5",
-      type: "expense",
+      type: "payment",
       title: "Office supplies",
-      description: "Approved in 3 days",
+      description: "Stationery and equipment",
       amount: 75,
       user: "David Lee",
       timestamp: "1 week ago",
       icon: Receipt
+    },
+    {
+      id: "7",
+      type: "payment",
+      title: "Team lunch",
+      description: "Weekly team bonding meal",
+      amount: 150,
+      user: "Sarah Kim",
+      timestamp: "2 weeks ago",
+      icon: Receipt
+    },
+    {
+      id: "3",
+      type: "member_joined",
+      title: "New member joined",
+      description: "Mike Johnson joined the group",
+      user: "Mike Johnson",
+      timestamp: "2 weeks ago",
+      icon: UserPlus
     }
   ];
 
@@ -503,22 +526,57 @@ const GroupManagement = () => {
           </div>
 
         
-          {/* Recent Activity */}
-          <Card className="max-w-6xl mx-auto">
+          {/* Upcoming Expenses */}
+          <Card className="max-w-6xl mx-auto mb-6">
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest transactions and updates</CardDescription>
+              <CardTitle>Upcoming </CardTitle>
+              <CardDescription>Pending expenses and actionsawaiting approval</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivity.map((activity) => (
+                {upcomingExpenses.map((activity) => (
                   <a href={`/group/${id}/${activity.id}`} key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
-                      <activity.icon className="h-4 w-4 text-primary" />
+                    <div className="flex-shrink-0 p-2 rounded-full bg-orange-100 dark:bg-orange-900/20">
+                      <activity.icon className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className="font-medium text-sm">{activity.title}</h4>
+                        <h4 className="font-medium text-sm text-[#00D57F]">{activity.title}</h4>
+                        {activity.amount && (
+                          <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                            ${activity.amount}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{activity.description}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-muted-foreground">{activity.user}</span>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">{activity.timestamp}</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Past Expenses */}
+          <Card className="max-w-6xl mx-auto">
+            <CardHeader>
+              <CardTitle>Past </CardTitle>
+              <CardDescription>Completed transactions and payments</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {pastExpenses.map((activity) => (
+                  <a href={`/group/${id}/${activity.id}`} key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex-shrink-0 p-2 rounded-full bg-green-100 dark:bg-green-900/20">
+                      <activity.icon className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-medium text-sm text-[#00D57F]">{activity.title}</h4>
                         {activity.amount && (
                           <span className={`text-sm font-medium ${
                             activity.type === 'payment' ? 'text-green-600' : 'text-foreground'
