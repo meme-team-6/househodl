@@ -59,7 +59,7 @@ contract AaveMultiTokenManager {
         pool.supply(asset, amount, address(this), 0);
     }
 
-    function Stake(uint256 amount, bytes12 flatGroup, address stakingToken) external {
+    function Stake(uint256 amount, bytes12 hodlId, address stakingToken) external {
         require(amount > 0, "Amount must be greater than zero");
         require(stakingToken != address(0), "Invalid staking token");
 
