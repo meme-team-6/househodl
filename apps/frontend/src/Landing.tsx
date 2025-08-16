@@ -26,7 +26,7 @@ function Landing() {
           </Link>
         </div>
       </header>
-      <div className="fixed inset-0 w-full h-full z-0">
+      <div className="absolute inset-0 w-full h-screen border-b z-0">
         <Galaxy 
      
           density={1.5}
@@ -89,7 +89,7 @@ function Landing() {
           </div>
         </div>
     
-        <section className="text-center mb-20">Powered by: ethereum, coinbase, </section>
+        <section className="text-center mb-20"><div className="flex justify-center gap-8 items-center"><p>Powered by </p><img className=" h-10" src="/product/eth.png"/> <img className=" h-10" src="/product/circle.png"/> <img className=" h-10" src="/product/dynamic.png"/>  <img className=" h-10" src="/product/layerzero.png"/> </div></section>
 
         {/* Features */}
         <section className="px-6 pb-16">
