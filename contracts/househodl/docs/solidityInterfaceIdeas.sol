@@ -11,11 +11,11 @@ contract SatelliteContract
 
     constructor (address _adminUser, address _valueStore) Ownable(msg.sender){}
 
-    function SendAaveTokensToValue(uint256 amount, address flatGroup, address stakingToken) private{}
+    function SendAaveTokensToValue(uint256 amount, bytes12 flatGroup, address stakingToken) private{}
 
-    function Stake(uint256 amount, address flatGroup, address stakingToken){}
+    function Stake(uint256 amount, bytes12 flatGroup, address stakingToken){}
 
-    function SubmitTransaction(uint256 amountUSD, address flatGroup, Share[] shares){}
+    function SubmitTransaction(uint256 amountUSD, bytes12 flatGroup, Share[] shares){}
 
     function lzReceive(...sdsd){}
 

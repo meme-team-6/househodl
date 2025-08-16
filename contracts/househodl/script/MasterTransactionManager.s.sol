@@ -12,7 +12,7 @@ contract MasterTransactionManagerScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        masterTransactionManager = new MasterTransactionManager();
+        // masterTransactionManager = new MasterTransactionManager();
 
         vm.stopBroadcast();
     }
