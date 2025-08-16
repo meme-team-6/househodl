@@ -5,7 +5,57 @@ import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp
 import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
+import {CreateHodl, HodlCreated, AddUserToHodl} from "./Messages.sol";
+
+
 contract MasterTransactionManager is OApp, OAppOptionsType3 {
+    struct Hodl {
+        bytes12 id;
+        address[] users;
+    }
+
+    Hodl[] internal hodls;
+    mapping(address => bytes32) internal mapUserToEid;
+
+
+    function createHodl(CreateHodl memory params) public returns (HodlCreated memory) {
+        require(hodls.length < (2**12 - 1), "Hodl pool full"); // Ensure we don't overflow the bytes12 ID
+        require(params.initialUser != address(0), "Initial user cannot be zero address");
+
+        bytes12 newHodlId = bytes12(uint96( hodls.length));
+
+        // Create a new Hodl instance, and add it to the hodls array
+        address[] memory initialUsers = new address[](1);
+        initialUsers[0] = params.initialUser;
+        Hodl memory newHodl = Hodl({
+            id: newHodlId, // Simple ID generation
+            users: initialUsers
+        });
+
+        hodls.push(newHodl);
+        mapUserToEid[params.initialUser] = params.initialUserChainId;
+
+        return HodlCreated({
+            hodleId: newHodlId
+        });
+    }
+
+    function addUserToHodl(AddUserToHodl memory params) public {
+        // Only the first user can add new users
+        require(hodls.length - 1 >= uint96(params.hodlId), "Hodl does not exist");
+        Hodl storage hodl = hodls[uint96(params.hodlId)];
+        require(hodl.users[0] == msg.sender, "Only the first user can add new users");
+        require(params.newUser != address(0), "New user cannot be zero address");
+        require(params.invitingUser != address(0), "Inviting user cannot be zero address");
+
+        // Add the new user to the hodl
+        hodl.users.push(params.newUser);
+        mapUserToEid[params.newUser] = params.hodlId;
+    }
+
+
+
+
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
     uint16 public constant SEND = 1;
 

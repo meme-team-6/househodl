@@ -11,8 +11,9 @@ enum Messages {
 }
 
 struct CreateHodl {
-    address initialUser;
     uint32 chainEndpointId;
+    address initialUser;
+    bytes32 initialUserChainId;
 }
 
 struct HodlCreated {
