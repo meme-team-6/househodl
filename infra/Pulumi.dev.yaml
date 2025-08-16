@@ -2,3 +2,5 @@ encryptionsalt: v1:GB/i8zzQIII=:v1:b/hMob/Cm8hber5d:/3EiXN8Zna3m9qptEwr5CloMuJ9s
 config:
   aws:profile: rebnz
   app:zone_domain: househodl.app
+  aws:region: ap-southeast-2
+  app:zone_id: Z01159383O4N042P82Z1A
