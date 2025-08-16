@@ -26,13 +26,13 @@ function Landing() {
           </Link>
         </div>
       </header>
-      <div className="absolute inset-0 w-full h-screen border-b z-0">
+      <div className="absolute inset-0 w-full h-screen border-b z-0 opacity-30 blur">
         <Galaxy 
      
           density={1.5}
           glowIntensity={0.5}
           saturation={0.8}
-          hueShift={240}
+          hueShift={32}
         />
       </div>
       
