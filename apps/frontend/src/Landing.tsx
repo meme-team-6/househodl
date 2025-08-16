@@ -12,18 +12,8 @@ function Landing() {
   return (
     <div className="relative min-h-screen text-foreground flex flex-col">
       {/* Fullscreen WebGL background */}
-      <div className="fixed inset-0 w-full h-full z-0">
-        <Galaxy 
-     
-          density={1.5}
-          glowIntensity={0.5}
-          saturation={0.8}
-          hueShift={240}
-        />
-      </div>
-      
-      {/* Top Nav */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4">
+       {/* Top Nav */}
+       <header className=" z-10 flex items-center justify-between px-6 py-4 sticky top-0">
         <Link to="/" className="text-lg font-semibold tracking-tight">
           HouseHodl
         </Link>
@@ -36,30 +26,64 @@ function Landing() {
           </Link>
         </div>
       </header>
+      <div className="fixed inset-0 w-full h-full z-0">
+        <Galaxy 
+     
+          density={1.5}
+          glowIntensity={0.5}
+          saturation={0.8}
+          hueShift={240}
+        />
+      </div>
+      
+     
 
       {/* Hero */}
       <main className="relative z-10 flex-1">
         <div className="relative mx-auto max-w-6xl px-6 py-16">
           <div className="relative h-[420px] sm:h-[520px]">
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <BlurText
-                text="Settle up in seconds."
-                delay={120}
-                animateBy="words"
-                direction="top"
-                onAnimationComplete={handleAnimationComplete}
-                className="text-4xl sm:text-6xl font-semibold tracking-tighter"
-              />
-              <p className="mt-4 max-w-3xl text-muted-foreground">
-                Turn messy receipts and group chats into clear, trackable balances. Finances are handled automatically with crypto, earning you interest on your money in the background.
-              </p>
-              <div className="mt-8 flex items-center gap-3">
-                <Link to="/home-filled">
-                  <Button size="lg">Open Dashboard</Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="outline" size="lg">Sign in</Button>
-                </Link>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-full items-center">
+                 {/* Left side - iPhone mockup placeholder */}
+                 <div className="flex justify-center col-span-2 ">
+                <div className="relative">
+                  {/* iPhone frame placeholder */}
+                  <div className="w-64 h-[520px] bg-gray-900 rounded-[3rem] p-2 shadow-2xl">
+                    <div className="w-full h-full bg-gray-100 rounded-[2.5rem] overflow-hidden">
+                      {/* Placeholder for app mockup */}
+                      <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                        <div className="text-center text-gray-500">
+                          <div className="w-16 h-16 bg-gray-300 rounded-lg mx-auto mb-4"></div>
+                          <p className="text-sm">App Mockup</p>
+                          <p className="text-xs">Placeholder</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+           
+              
+              {/* Right side - Hero text */}
+              <div className="flex flex-col justify-center text-start col-span-3">
+                <BlurText
+                  text="Settle up in seconds."
+                  delay={120}
+                  animateBy="words"
+                  direction="top"
+                  onAnimationComplete={handleAnimationComplete}
+                  className="text-4xl sm:text-6xl font-semibold tracking-tighter"
+                />
+                <p className="mt-4 max-w-xl text-gray-300">
+                  Turn messy receipts and group chats into clear, trackable balances. Finances are handled automatically with crypto, earning you interest on your money in the background.
+                </p>
+                <div className="mt-6 flex items-center gap-3">
+                  <Link to="/home-filled">
+                    <Button size="lg">Get Started</Button>
+                  </Link>
+                  <Link to="/login">
+                    <Button variant="outline" size="lg">Sign in</Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
