@@ -1,6 +1,6 @@
-pragma solidity ^0.8.13; 
+pragma solidity ^0.8.13;
 
-import {Share} from "./Common.sol";
+import {Share, Transaction} from "./Common.sol";
 
 enum Messages {
     CREATE_HOLD,
@@ -25,10 +25,7 @@ struct AddUserToHodl {
     uint32 chainEndpointId;
 }
 
-
-sturct SubmitTransaction {
+struct SubmitTransaction {
     bytes12 hodlId;
-    address user;
-    uint256 amountUSD;
-    Share[] shares;
+    Transaction transaction;
 }
