@@ -33,6 +33,8 @@
     "tag": {
       "name": "v5.4.0",
       "rev": "e725abddf1e01cf05ace496e950fc8e243cc7cab"
+    }
+  },
   "lib/aave-v3-periphery": {
     "tag": {
       "name": "v3.0.1",
