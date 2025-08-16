@@ -128,7 +128,7 @@ function Signup() {
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center items-center gap-4">
-            LOGO
+           <img src="/logo.svg" alt="Logo" className="h-5 w-auto" />
           </div>
           
           <Card className="border-none shadow-lg">
