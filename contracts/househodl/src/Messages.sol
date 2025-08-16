@@ -1,6 +1,6 @@
 pragma solidity ^0.8.13;
 
-import {Share, Transaction, TransactionInstruction} from "./Common.sol";
+import {Transaction, TransactionInstruction} from "./Common.sol";
 
 enum Messages {
     CREATE_HOLD,

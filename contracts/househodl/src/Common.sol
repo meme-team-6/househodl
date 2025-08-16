@@ -7,7 +7,7 @@ struct Share {
 }
 
 struct Transaction {
-    uint256 amountUSD;
+    uint256 amountUsd;
     Share[] shares;
     address orignatingUser;
     // Unix time (seconds) when this transaction was recorded. Use block.timestamp cast to uint48 for gas efficiency.
