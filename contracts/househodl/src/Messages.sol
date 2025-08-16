@@ -35,3 +35,18 @@ struct ReconcileTranscation {
     bytes12 hodlId;
     TransactionInstruction[] transactionInstructions;
 }
+
+abstract contract IMessageEncoder {
+    function createPacket(
+        Messages message,
+        bytes memory packet
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(Stringuint16(message));
+    }
+
+    function encodeCreateHodl(
+        CreateHodl memory _createHodl
+    ) internal pure returns (bytes memory) {
+        bytes memory encoded = abi.encode(_createHodl);
+    }
+}

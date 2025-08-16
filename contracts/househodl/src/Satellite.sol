@@ -9,6 +9,9 @@ contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
     uint16 public constant SEND = 1;
 
+    /// @notice Emitted when a message is received and parsed
+    event MessageReceived(string msgType, string data);
+
     /// @notice Initialize with Endpoint V2 and owner address
     /// @param _endpoint The local chain's LayerZero Endpoint V2 address
     /// @param _owner    The address permitted to configure this OApp
@@ -72,7 +75,11 @@ contract Satellite is OApp, OAppOptionsType3 {
         // 2. Encode any data structures you wish to send into bytes
         //    You can use abi.encode, abi.encodePacked, or directly splice bytes
         //    if you know the format of your data structures
-        bytes memory _message = abi.encode(_string);
+        // Build the payload using the format "<MESSAGE>:<DATA>" and ABI-encode it
+        // Here we use a simple message type tag "STRING" for demonstration.
+        bytes memory _message = abi.encode(
+            string.concat("STRING", ":", _string)
+        );
 
         // 3. Call OAppSender._lzSend to package and dispatch the cross-chain message
         //    - _dstEid:   remote chain's Endpoint ID
@@ -114,15 +121,48 @@ contract Satellite is OApp, OAppOptionsType3 {
         address /*_executor*/,
         bytes calldata /*_extraData*/
     ) internal override {
-        // 1. Decode the incoming bytes into a string
-        //    You can use abi.decode, abi.decodePacked, or directly splice bytes
-        //    if you know the format of your data structures
-        string memory _string = abi.decode(_message, (string));
+        // 1. Decode the incoming bytes into the combined string "<MESSAGE>:<DATA>"
+        string memory combined = abi.decode(_message, (string));
 
-        // 2. Apply your custom logic. In this example, store it in `lastMessage`.
+        // 2. Split on the first ':' character to get message type and data
+        (string memory msgType, string memory data) = _splitOnColon(combined);
 
-        // 3. (Optional) Trigger further on-chain actions.
-        //    e.g., emit an event, mint tokens, call another contract, etc.
-        //    emit MessageReceived(_origin.srcEid, _string);
+        // 3. Emit an event with the parsed payload; downstream apps can react to it.
+        emit MessageReceived(msgType, data);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Internal helpers
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function _splitOnColon(
+        string memory s
+    ) internal pure returns (string memory left, string memory right) {
+        bytes memory b = bytes(s);
+        uint256 len = b.length;
+        for (uint256 i = 0; i < len; i++) {
+            if (b[i] == bytes(":")[0]) {
+                // left = s[0:i], right = s[i+1:len]
+                left = _substring(b, 0, i);
+                // avoid underflow if ':' is the last char
+                right = i + 1 < len ? _substring(b, i + 1, len) : "";
+                return (left, right);
+            }
+        }
+        // If no ':' found, return empty left and the whole string as right
+        return ("", s);
+    }
+
+    function _substring(
+        bytes memory strBytes,
+        uint256 start,
+        uint256 end
+    ) internal pure returns (string memory) {
+        require(end >= start, "bad range");
+        bytes memory result = new bytes(end - start);
+        for (uint256 i = start; i < end; i++) {
+            result[i - start] = strBytes[i];
+        }
+        return string(result);
     }
 }
