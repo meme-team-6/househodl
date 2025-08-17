@@ -145,7 +145,7 @@ contract Satellite is OApp, OAppOptionsType3 {
         }
     }
 
-    function GetBalanceOfToken(bytes12 hodlId, address tokenAddr) external view returns (uint256) {
+    function GetBalanceOfToken(bytes12 hodlId, address tokenAddr) public view returns (uint256) {
         bytes20 userHodlKey = bytes20(abi.encodePacked(hodlId, msg.sender));
         TokenOwnership storage ownership = tokenOwnershipsPerUserHodl[userHodlKey];
 
@@ -161,6 +161,70 @@ contract Satellite is OApp, OAppOptionsType3 {
         // User's balance = (user shares / total shares) * total aTokens
         return (ownership.shareAmount * totalATokens) / totalShares;
     }
+
+    function GetBalanceOfTokenAsUSDC(bytes12 hodlId, address tokenAddr) external view returns (uint256) {
+        uint256 tokenBalance = GetBalanceOfToken(hodlId, tokenAddr);
+        // User's balance = (user shares / total shares) * total aTokens
+        return aaveManager.GetTokenBalanceAsUSDC(tokenBalance, tokenAddr);
+    }
+
+    struct Proportion {
+        address user;
+        address tokenAddr;
+        int256 proportion; // out of 1e8
+    }
+
+    function CoordinateTransaction(
+        bytes12 hodlId,
+        uint256 totalUsdcAmount,
+        Proportion[] calldata proportions
+    ) external onlyOwner {
+        require(proportions.length > 0, "No proportions provided");
+
+        // Sum proportions and check they add up to 0
+        int256 sumProportions = 0;
+        for (uint256 i = 0; i < proportions.length; i++) {
+            sumProportions += proportions[i].proportion;
+        }
+        require(sumProportions == 0, "Proportions must sum to 0");
+
+        // For each user, calculate new share amount based on their proportion of totalUsdcAmount
+        for (uint256 i = 0; i < proportions.length; i++) {
+
+            bytes20 userHodlKey = bytes20(abi.encodePacked(hodlId, proportions[i].user));
+            TokenOwnership storage ownership = tokenOwnershipsPerUserHodl[userHodlKey];
+
+            // If user doesn't exist, initialize
+            require(ownership.owner != address(0), "User has not staked before!");
+
+            // Get total shares for this token
+            int256 totalShares = int256(totalSharesAssignedPerToken[proportions[i].tokenAddr]);
+            require(totalShares > 0, "No shares to rearrange");
+
+            // Get total aTokens and their USDC value
+            int256 totalATokens = int256(aaveManager.GetTotalAvailableAaveToken(proportions[i].tokenAddr));
+            int256 pricePerShare = int256(totalATokens) / int256(totalShares);
+
+            int256 totalATokensAsUSDC = int256(aaveManager.GetTokenBalanceAsUSDC(uint256(totalATokens), proportions[i].tokenAddr));
+
+            require(totalATokensAsUSDC > 0, "No USDC value in pool");
+
+            address user = proportions[i].user;
+            int256 userProp = proportions[i].proportion;
+
+            // Calculate user's USDC change
+            int256 userUsdcChange = (int256(totalUsdcAmount) * userProp) / 1e8;
+
+            // Convert USDC allocation to aToken amount
+            int256 userATokensChange = (totalATokens * userUsdcChange) / totalATokensAsUSDC;
+
+            // Set new share amount
+            int256 adjustedshareAmount = userATokensChange / pricePerShare + int256(ownership.shareAmount);
+            ownership.shareAmount = uint256(adjustedshareAmount);
+            tokenOwnershipsPerUserHodl[userHodlKey] = ownership;
+        }
+    }
+
 
     function StakeUsingAave(bytes12 hodlId, uint256 amount, address tokenAddr) external payable {
         
@@ -206,6 +270,7 @@ contract Satellite is OApp, OAppOptionsType3 {
 
         ownership.shareAmount += sharesAssociatedWithStake;
         tokenOwnershipsPerUserHodl[userHodlKey] = ownership;
+
     }
 
 }

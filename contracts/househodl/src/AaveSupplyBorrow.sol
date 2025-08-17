@@ -111,9 +111,12 @@ contract AaveMultiTokenManager {
         return IERC20(aToken).balanceOf(address(this));
     }
 
-    function GetTotalAvailableAaveUSDC() external view returns (uint256) {
-        (address aToken, ,) = dataProvider.getReserveTokensAddresses(usdc);
-        return IERC20(aToken).balanceOf(address(this));
+    /// @notice Get the USDC value of the contract's balance of a given asset
+    /// @param asset ERC20 token address
+    /// @return USDC value (6 decimals)
+    function GetTokenBalanceAsUSDC(uint256 tokenBalance, address asset) external view returns (uint256) {
+        (uint256 decimals, , , , , , , , , ) = dataProvider.getReserveConfigurationData(asset);
+        return getUSDCValue(asset, tokenBalance, uint8(decimals));
     }
 
     /// @notice Withdraw ERC20 token from Aave
