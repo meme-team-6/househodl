@@ -163,7 +163,7 @@ contract Satellite is OApp, OAppOptionsType3 {
     }
 
     function StakeUsingAave(bytes12 hodlId, uint256 amount, address tokenAddr) external payable {
-
+        
         // First the associated AaveMultiTokenManager should be interrogated to 
         // find out how many aTokens of given token are present in the pool
         // The shares owned by this user divided by total shares * amount of aTokens present in the contract
@@ -185,7 +185,7 @@ contract Satellite is OApp, OAppOptionsType3 {
         if(totalATokensPreStake == 0){
             require(totalShares == 0, "Tokens exist, but no shares assigned somehow!");
             totalShares = amount;
-            pricePerShare = amount;
+            pricePerShare = 1;
         }
         else {
             pricePerShare = totalATokensPreStake / totalShares;
