@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Transaction, TransactionInstruction, User} from "./Common.sol";
+import {Transaction, User, Proportion} from "./Common.sol";
+import {ReconcileTransaction} from "./Messages.sol";
 import {StorageUnit} from "./StorageUnit.sol";
 
 library TransactionProcessor {
@@ -9,7 +10,7 @@ library TransactionProcessor {
 
     struct ProcessingResult {
         bytes32[] processedTransactionIds;
-        TransactionInstruction[] instructions;
+        // TransactionInstruction[] instructions;
     }
 
     function findExpiredTransactions(
@@ -21,7 +22,11 @@ library TransactionProcessor {
 
         for (uint256 i = 0; i < totalTransactions; i++) {
             StorageUnit.PendingTransaction memory pending = storageUnit.getPendingTransactionByIndex(i);
-            if (block.timestamp >= pending.transaction.createdAt + PROCESSING_THRESHOLD) {
+
+            bool isExpired = block.timestamp >= pending.transaction.createdAt + PROCESSING_THRESHOLD;
+            bool isApproved = pending.transaction.approvalVotes.length >=
+                (storageUnit.getHodlUserAddresses(pending.hodlId).length / 2) + 1;
+            if (isApproved && isExpired) {
                 tempExpired[expiredCount] = pending.id;
                 expiredCount++;
             }
@@ -63,26 +68,35 @@ library TransactionProcessor {
     function processExpiredTransactions(
         StorageUnit storageUnit,
         bytes32[] memory transactionIds
-    ) internal view returns (TransactionInstruction[] memory instructions) {
+    ) internal view {
         // Stub for the real one
     }
 
     function calculateTransactionSplits(
+        bytes12 hodlId,
         Transaction memory transaction,
         address[] memory hodlUsers
-    ) internal pure returns (TransactionInstruction[] memory instructions) {
-        instructions = new TransactionInstruction[](hodlUsers.length);
+    ) internal pure returns (ReconcileTransaction memory finalInstruction) {
+        Proportion[] memory proportions = new Proportion[](hodlUsers.length);
 
-        // pretty sure this math is right
+        // Find total shares
+        uint256 totalBasisPoints = 0;
+        for (uint256 i = 0; i < transaction.shares.length; i++) {
+            totalBasisPoints += transaction.shares[i].percentageInBasisPoints;
+        }
+
         
         for (uint256 i = 0; i < hodlUsers.length; i++) {
-            instructions[i] = TransactionInstruction({
-                hodlId: bytes12(0),
-                to: hodlUsers[i],
-                from: transaction.originatingUser,
-                destChainId: 0,
-                amountUsd: (transaction.amountUsd * transaction.shares[i].percentageInBasisPoints) / 10000
+            proportions[i] = Proportion({
+                user: hodlUsers[i],
+                proportion: int256((transaction.shares[i].percentageInBasisPoints * 1e8) / totalBasisPoints)
             });
         }
+
+        return ReconcileTransaction({
+            hodlId: hodlId,
+            proportion: proportions,
+            totalUsdcAmount: transaction.amountUsd
+        });
     }
 }

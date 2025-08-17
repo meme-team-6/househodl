@@ -5,8 +5,9 @@ pragma solidity ^0.8.13;
 import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {MessageType, MessageEncoder, CreateHodl, Stake, HodlUsersResponse} from "./Messages.sol";
+import {MessageType, MessageEncoder, CreateHodl, Stake, HodlUsersResponse, ReconcileTransaction} from "./Messages.sol";
 import {AaveMultiTokenManager} from "./AaveSupplyBorrow.sol";
+import {Proportion} from "./Common.sol";
 
 contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
@@ -142,6 +143,14 @@ contract Satellite is OApp, OAppOptionsType3 {
         if (msgType == MessageType.HODL_USERS_RESPONSE) {
             HodlUsersResponse memory resp = MessageEncoder.asHodlUsersResponse(_message);
             // emit HodlUsersResponse(resp.hodlId, resp.users);
+        } else if (msgType == MessageType.RECONCILE_TRANSACTION) {
+            ReconcileTransaction memory reconcile = MessageEncoder.asReconcileTransaction(_message);
+
+            this.CoordinateTransaction(
+                reconcile.hodlId,
+                reconcile.totalUsdcAmount,
+                reconcile.proportion
+            );
         }
     }
 
@@ -168,11 +177,7 @@ contract Satellite is OApp, OAppOptionsType3 {
         return aaveManager.GetTokenBalanceAsUSDC(tokenBalance, tokenAddr);
     }
 
-    struct Proportion {
-        address user;
-        address tokenAddr;
-        int256 proportion; // out of 1e8
-    }
+
 
     function CoordinateTransaction(
         bytes12 hodlId,

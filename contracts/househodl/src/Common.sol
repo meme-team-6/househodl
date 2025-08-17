@@ -32,12 +32,11 @@ struct Transaction {
     address[] disapprovalVotes;
 }
 
-struct TransactionInstruction {
-    bytes12 hodlId;
-    address to;
-    address from;
-    uint32 destChainId;
-    uint256 amountUsd;
+
+struct Proportion {
+    address user;
+    int256 proportion; // out of 1e8
 }
 
 // TODO: Create enum repersenting all the chains that we work on
+
