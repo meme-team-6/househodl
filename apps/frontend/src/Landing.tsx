@@ -20,16 +20,16 @@ function Landing() {
     <div className="relative min-h-screen text-foreground flex flex-col">
       {/* Fullscreen WebGL background */}
       {/* Top Nav */}
-      <header className=" z-10 flex items-center justify-between px-6 py-4 sticky top-0">
+      <header className=" z-20 flex items-center justify-between px-6 py-4 sticky top-0 max-md:bg-black  max-md:backdrop-blur">
         <Link to="/" className="text-lg font-semibold tracking-tight">
           <img src="/logo.svg" alt="Logo" className="h-5 w-auto" />
         </Link>
         <div className="space-x-3 flex flex-row-reverse">
-          <DynamicConnectButton buttonClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#00D57F] text-primary-foreground hover:bg-primary/90">
+          <DynamicConnectButton buttonContainerClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#00D57F] text-primary-foreground hover:bg-primary/90">
             Get Started
           </DynamicConnectButton>
 
-          <DynamicConnectButton buttonClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
+          <DynamicConnectButton buttonContainerClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
             Sign in
           </DynamicConnectButton>
         </div>
@@ -76,12 +76,12 @@ function Landing() {
                   automatically with crypto, earning you interest on your money
                   in the background.
                 </p>
-                <div className="mt-6 flex items-center gap-3">
-                  <DynamicConnectButton buttonClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#00D57F] text-primary-foreground hover:bg-primary/90">
+                <div className="mt-6 flex items-center gap-3 max-md:flex-col max-md:gap-2">
+                  <DynamicConnectButton buttonContainerClassName="max-md:w-full h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#00D57F] text-primary-foreground hover:bg-primary/90">
                     Get Started
                   </DynamicConnectButton>
 
-                  <DynamicConnectButton buttonClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
+                  <DynamicConnectButton buttonContainerClassName="max-md:w-full h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
                     Sign in
                   </DynamicConnectButton>
                 </div>
@@ -91,7 +91,7 @@ function Landing() {
         </div>
 
         <section className="text-center mb-20 mt-12">
-          <div className="flex justify-center gap-8 items-center">
+          <div className="flex justify-center gap-8 items-center flex-wrap">
             <p>Powered by </p>
             <img className=" h-10" src="/product/eth.png" />{" "}
             <img className=" h-10" src="/product/circle.png" />{" "}
@@ -314,7 +314,7 @@ function Landing() {
         <section className="px-6 py-8">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold mb-4">
-              Let's Make Group Expenses Fun Again! 🎉
+              Let's make group expenses simple! 🎉
             </h2>
             <p className="text-muted-foreground mb-8">
               No more awkward money conversations or spreadsheet headaches. Join
@@ -322,7 +322,7 @@ function Landing() {
               profitable. Your future self will thank you! ✨
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <DynamicConnectButton buttonClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
+              <DynamicConnectButton buttonContainerClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
                 Sign up
               </DynamicConnectButton>
             </div>
