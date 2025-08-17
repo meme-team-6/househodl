@@ -257,6 +257,7 @@ const GroupManagement = () => {
       }
     };
     handle();
+    setShowInviteModal(false);
   };
 
   const resetInviteModal = () => {
