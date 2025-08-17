@@ -179,14 +179,22 @@ contract MasterTransactionManager is OApp {
     }
 
     function listPendingTransactions(bytes12 hodlId) external view returns (StorageUnit.PendingTransaction[] memory) {
-        uint256 count = storageUnit.getPendingTransactionCount();
-        StorageUnit.PendingTransaction[] memory transactions = new StorageUnit.PendingTransaction[](count);
+        uint256 totalCount = storageUnit.getPendingTransactionCount();
+        StorageUnit.PendingTransaction[] memory transactions = new StorageUnit.PendingTransaction[](totalCount);
         
-        for (uint256 i = 0; i < count; i++) {
+        uint256 matchingCount = 0;
+        for (uint256 i = 0; i < totalCount; i++) {
             StorageUnit.PendingTransaction memory pending = storageUnit.getPendingTransactionByIndex(i);
             if (pending.hodlId == hodlId) {
-                transactions[i] = pending;
+                transactions[matchingCount] = pending;
+                matchingCount++;
             }
+        }
+        
+        // Note: Array may be larger than needed, but avoids extra copy operation
+        // Calling code should only read first `matchingCount` elements
+        assembly {
+            mstore(transactions, matchingCount)
         }
         
         return transactions;
