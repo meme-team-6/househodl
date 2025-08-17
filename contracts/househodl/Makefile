@@ -76,8 +76,8 @@ deploy-cross-chain:
 	@echo "=== Full Cross-Chain Deployment ==="
 	@echo "Step 1: Deploy master contracts on Sepolia"
 	$(MAKE) deploy-master CHAIN=sepolia
-	@echo "Step 2: Deploy satellite on Polygon Amoy"
-	$(MAKE) deploy-satellite CHAIN=polygon-amoy
+	@echo "Step 2: Deploy satellite also on Sepolia"
+	$(MAKE) deploy-satellite CHAIN=sepolia
 	@echo "Step 3: Setup cross-chain connections"
 	$(MAKE) setup-cross-chain
 	@echo "=== Cross-chain deployment complete! ==="
@@ -156,7 +156,7 @@ verify-deployment:
 
 # Build contracts
 build:
-	forge build
+	forge build --optimize --optimizer-runs 2000
 
 # Run tests
 test:
