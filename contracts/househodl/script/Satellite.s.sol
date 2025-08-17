@@ -11,7 +11,6 @@ contract SatelliteScript is Script, SimpleDeploymentState {
     function run() public {
         printDeploymentStatus();
         
-        require(!isMasterChain(), "This script should only be run on satellite chains, not the master chain");
         
         address existingSatellite = getSatelliteAddress();
         if (existingSatellite != address(0)) {

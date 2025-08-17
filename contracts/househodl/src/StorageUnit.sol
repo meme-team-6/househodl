@@ -212,4 +212,17 @@ contract StorageUnit is Ownable {
             }
         }
     }
+
+    function updateUserDebt(bytes12 hodlId, address userAddress, int256 debtAmount) external onlyTransactionManager {
+        User[] storage users = hodlUsers[hodlId];
+        
+        for (uint256 i = 0; i < users.length; i++) {
+            if (users[i].userAddress == userAddress) {
+                users[i].realDebtUsd += debtAmount;
+                return;
+            }
+        }
+        
+        revert("User not found in hodl");
+    }
 }

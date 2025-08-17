@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import { OApp, MessagingFee, Origin } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import { CreateHodl, HodlCreated, AddUserToHodl, SubmitTransaction, ReconcileTransaction, MessageEncoder } from "./Messages.sol";
 import { StorageUnit } from "./StorageUnit.sol";
-import { Transaction, User, HodlGroup, Set } from "./Common.sol";
+import { Transaction, User, HodlGroup, Set, Proportion } from "./Common.sol";
 import { TransactionProcessor } from "./TransactionProcessor.sol";
 
 contract MasterTransactionManager is OApp {
@@ -93,6 +93,12 @@ contract MasterTransactionManager is OApp {
         require(params.newUser != address(0), "New user cannot be zero address");
         require(params.invitingUser != address(0), "Inviting user cannot be zero address");
 
+        for (uint256 i = 0; i < users.length; i++) {
+            if (users[i].userAddress == params.newUser) {
+                revert("User already in hodl");
+            }
+        }
+
         // Add the new user to the hodl
         storageUnit.addUserToHodl(params.hodlId, params.newUser, params.newUserChainId);
     }
@@ -155,6 +161,15 @@ contract MasterTransactionManager is OApp {
             hodlUsers: storageUnit.getHodlUserAddresses(params.hodlId)
         });
 
+        // Apply to internal state - update each user's debt based on their proportion
+        for (uint256 i = 0; i < reconciliation.proportion.length; i++) {
+            Proportion memory userProportion = reconciliation.proportion[i];
+            // Calculate debt amount: (proportion / 1e8) * totalUsdcAmount
+            int256 debtAmount = (userProportion.proportion * int256(reconciliation.totalUsdcAmount)) / 1e8;
+            storageUnit.updateUserDebt(params.hodlId, userProportion.user, debtAmount);
+        }
+
+
         uint[] memory connectedChains = listConnectedChainIds(hodlUsers);
 
         for (uint i = 0; i < connectedChains.length; i++) {
@@ -171,7 +186,12 @@ contract MasterTransactionManager is OApp {
         return transactionId;
     }
 
-    function voteOnTransaction(bytes32 transactionId, bool approve) external {
+    function voteOnTransaction(bytes32 transactionId, bool approve) external returns (
+        address[] memory approvalVotes,
+        address[] memory disapprovalVotes,
+        bool hasVoted,
+        bool isApproval
+    ) {
         StorageUnit.PendingTransaction memory pendingTx = storageUnit.getPendingTransaction(transactionId);
         
         User[] memory hodlUsers = storageUnit.getHodlUsers(pendingTx.hodlId);
@@ -189,6 +209,12 @@ contract MasterTransactionManager is OApp {
         storageUnit.addVoteToTransaction(transactionId, msg.sender, approve);
 
         emit TransactionVoteSubmitted(transactionId, msg.sender, approve);
+
+        // Get updated voting information
+        (approvalVotes, disapprovalVotes) = this.getTransactionVotes(transactionId);
+        (hasVoted, isApproval) = this.hasUserVoted(transactionId, msg.sender);
+        
+        return (approvalVotes, disapprovalVotes, hasVoted, isApproval);
     }
 
     function findAndProcessApprovedTransactions() external returns (uint256 processedCount) {

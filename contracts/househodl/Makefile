@@ -66,7 +66,7 @@ deploy-satellite:
 		--broadcast \
 		--verify \
 		--etherscan-api-key $(ETHERSCAN_API_KEY) \
-		--retries 10 \
+		--retries 15 \
 		--delay 10 \
 		--account $(ACCOUNT) \
 		-vvvv
@@ -85,15 +85,9 @@ deploy-cross-chain:
 # Setup cross-chain peer connections
 setup-cross-chain:
 	@echo "Setting up cross-chain peer connections..."
-	@echo "Configuring master (Sepolia)..."
+	@echo "Configuring master && satellite (Sepolia)..."
 	forge script script/SetupCrossChain.s.sol:SetupCrossChainScript \
 		--rpc-url $(SEPOLIA_RPC) \
-		--broadcast \
-		--account $(ACCOUNT) \
-		-vvvv
-	@echo "Configuring satellite (Polygon Amoy)..."
-	forge script script/SetupCrossChain.s.sol:SetupCrossChainScript \
-		--rpc-url $(POLYGON_AMOY_RPC) \
 		--broadcast \
 		--account $(ACCOUNT) \
 		-vvvv
@@ -107,7 +101,7 @@ deploy-aave:
 		--broadcast \
 		--verify \
 		--etherscan-api-key $(ETHERSCAN_API_KEY) \
-		--retries 10 \
+		--retries 15 \
 		--delay 10 \
 		--account $(ACCOUNT) \
 		-vvvv
@@ -120,7 +114,7 @@ deploy-storage:
 		--broadcast \
 		--verify \
 		--etherscan-api-key $(ETHERSCAN_API_KEY) \
-		--retries 10 \
+		--retries 15 \
 		--delay 10 \
 		--account $(ACCOUNT) \
 		-vvvv
@@ -133,7 +127,7 @@ deploy-mtm:
 		--broadcast \
 		--verify \
 		--etherscan-api-key $(ETHERSCAN_API_KEY) \
-		--retries 10 \
+		--retries 15 \
 		--delay 10 \
 		--account $(ACCOUNT) \
 		-vvvv
@@ -174,7 +168,7 @@ verify-storage:
 		forge verify-contract $$STORAGE_ADDRESS src/StorageUnit.sol:StorageUnit \
 			--etherscan-api-key $(ETHERSCAN_API_KEY) \
 			--constructor-args $$(cast abi-encode "constructor(address)" "$(CONTRACT_OWNER)") \
-			--retries 10 \
+			--retries 15 \
 			--delay 10; \
 	else \
 		echo "StorageUnit not deployed yet"; \
@@ -188,7 +182,7 @@ verify-mtm:
 		forge verify-contract $$MTM_ADDRESS src/MasterTransactionManager.sol:MasterTransactionManager \
 			--etherscan-api-key $(ETHERSCAN_API_KEY) \
 			--constructor-args $$(cast abi-encode "constructor(address,address,address)" "0x6EDCE65403992e310A62460808c4b910D972f10f" "$(CONTRACT_OWNER)" "$$STORAGE_ADDRESS") \
-			--retries 10 \
+			--retries 15 \
 			--delay 10; \
 	else \
 		echo "MasterTransactionManager or StorageUnit not deployed yet"; \

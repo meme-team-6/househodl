@@ -11,11 +11,8 @@ contract SetupCrossChainScript is Script, SimpleDeploymentState {
     function run() public {
         printDeploymentStatus();
         
-        if (isMasterChain()) {
-            setupMasterPeers();
-        } else {
-            setupSatellitePeers();
-        }
+        setupMasterPeers();
+        setupSatellitePeers();
     }
     
     function setupMasterPeers() public {
@@ -28,7 +25,7 @@ contract SetupCrossChainScript is Script, SimpleDeploymentState {
         
         // Define satellite chains to connect
         uint256[] memory satelliteChainIds = new uint256[](1);
-        satelliteChainIds[0] = 80002; // Polygon Amoy
+        satelliteChainIds[0] = 11155111; // Sepolia
         
         vm.startBroadcast();
         
