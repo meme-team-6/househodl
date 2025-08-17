@@ -1,7 +1,7 @@
 import { evmProvidersSelector } from "@dynamic-labs/ethereum-core";
 import { useWallet } from "./useWallet";
 import { useRpcProviders } from "@dynamic-labs/sdk-react-core";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   masterTransactionManagerAbi,
   masterTransactionManagerAddress,
@@ -36,7 +36,7 @@ export const usePendingTransaction = ({
   >(undefined);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchTransaction = useCallback(() => {
     if (!wallet) return;
 
     setLoading(true);
@@ -56,8 +56,13 @@ export const usePendingTransaction = ({
       .finally(() => setLoading(false));
   }, [rpcProvider, transactionId, wallet]);
 
+  useEffect(() => {
+    fetchTransaction();
+  }, [fetchTransaction]);
+
   return {
     transaction,
     loading,
+    refetch: fetchTransaction,
   };
 };
