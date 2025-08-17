@@ -11,12 +11,9 @@ contract StorageUnitScript is Script, SimpleDeploymentState {
     function run() public {
         printDeploymentStatus();
         
-        // Check if StorageUnit is already deployed
         address existingStorageUnit = getStorageUnitAddress();
         if (existingStorageUnit != address(0)) {
-            console.log("StorageUnit already deployed at:", existingStorageUnit);
-            console.log("Use --force flag or delete deployments/ folder to redeploy");
-            return;
+            console.log("Redeploying StorageUnit (previous deployment at:", existingStorageUnit, ")");
         }
 
         address owner = vm.envOr("CONTRACT_OWNER", msg.sender);

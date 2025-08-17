@@ -11,12 +11,9 @@ contract MasterTransactionManagerScript is Script, SimpleDeploymentState {
     function run() public {
         printDeploymentStatus();
         
-        // Check if MasterTransactionManager is already deployed
         address existingMTMAddress = getMasterTransactionManagerAddress();
         if (existingMTMAddress != address(0)) {
-            console.log("MasterTransactionManager already deployed at:", existingMTMAddress);
-            console.log("Use --force flag or delete deployments/ folder to redeploy");
-            return;
+            console.log("Redeploying MasterTransactionManager (previous deployment at:", existingMTMAddress, ")");
         }
 
         // Get StorageUnit address from state

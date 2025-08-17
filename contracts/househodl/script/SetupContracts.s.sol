@@ -10,8 +10,7 @@ contract SetupContractsScript is Script, SimpleDeploymentState {
         printDeploymentStatus();
         
         if (isSetupComplete()) {
-            console.log("Setup already complete!");
-            return;
+            console.log("Re-running setup (was previously complete)");
         }
 
         address storageUnitAddress = getStorageUnitAddress();
