@@ -97,7 +97,7 @@ contract AaveMultiTokenManager {
         borrowUSDC(borrowableAmount, 2);
 
         //Resupply the USDC straight back into aave, and instead track aUSDC token
-        recycleUSDC(borrowableAmount);
+        // recycleUSDC(borrowableAmount);
 
         //Returns the amount of aUSDC added in this transaction
         return borrowableAmount;
