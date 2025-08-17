@@ -1,4 +1,4 @@
-import { useReverseEns } from "@/hooks/useENS";
+import { useReverseEns } from "@/hooks/useEns";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 
 const avatar = "https://avatars.githubusercontent.com/u/23006558";
