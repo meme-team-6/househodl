@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { useHodl } from "./hooks/useHodl";
 import { VotingStatus } from "./VotingStatus";
+import { useMemo, useEffect } from "react";
+import { usePendingTransaction } from "./hooks/useTransaction";
+import { useReverseEns } from "./hooks/useENS";
 
 // Extend Window interface to include our custom property
 declare global {
@@ -52,7 +55,29 @@ function GroupTransaction() {
     transactionId: string;
   }>();
 
-  const { isLoading, hodl } = useHodl(id || "");
+  const { isLoading: isHodlLoading, hodl } = useHodl(id || "");
+  const { isLoading: isTxLoading, transaction } = usePendingTransaction({
+    transactionId: transactionId || "",
+  });
+
+  const ensName = useReverseEns(
+    transaction?.transaction.originatingUser ||
+      "0x0000000000000000000000000000000000000000"
+  );
+
+  const vanityName = useMemo(() => {
+    return (
+      transaction?.transaction.vanityName
+        .split(/(\w\w)/g)
+        .filter((p) => !!p)
+        .map((c) => String.fromCharCode(parseInt(c, 16)))
+        .join("") || "Unnamed Transaction"
+    );
+  }, [transaction]);
+
+  useEffect(() => {
+    console.log(transaction);
+  }, [transaction]);
 
   const handleMobileMenuClick = () => {
     if (typeof window !== "undefined" && window.openMobileSidebar) {
@@ -127,7 +152,7 @@ function GroupTransaction() {
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Group
+              Back to Hodl
             </Link>
           </div>
 
@@ -141,12 +166,13 @@ function GroupTransaction() {
                       <Receipt className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">
-                        {transactionData.title}
-                      </CardTitle>
+                      <CardTitle className="text-xl">{vanityName}</CardTitle>
                       <CardDescription className="mt-1">
-                        Submitted by {transactionData.submittedBy} •{" "}
-                        {transactionData.submittedAt}
+                        Submitted by{" "}
+                        {ensName || transaction?.transaction.originatingUser} •{" "}
+                        {new Date(
+                          transaction?.transaction.createdAt ?? ""
+                        ).toLocaleString()}
                       </CardDescription>
                     </div>
                   </div>
