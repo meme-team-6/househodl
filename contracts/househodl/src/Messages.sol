@@ -46,7 +46,12 @@ library MessageEncoder {
     ) public pure returns (bytes memory) {
         return abi.encode(MessageType.CREATE_HOLD, _createHodl);
     }
-
+    
+    function encodeReconcileTransaction(
+        ReconcileTransaction memory _reconcileTransaction
+    ) public pure returns (bytes memory) {
+        return abi.encode(MessageType.RECONCILE_TRANSACTION, _reconcileTransaction);
+    }
     function determineType(
         bytes memory packet
     ) public pure returns (MessageType) {

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { OApp, MessagingFee, Origin } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
-import { CreateHodl, HodlCreated, AddUserToHodl, SubmitTransaction } from "./Messages.sol";
+import { CreateHodl, HodlCreated, AddUserToHodl, SubmitTransaction, ReconcileTransaction, MessageEncoder } from "./Messages.sol";
 import { StorageUnit } from "./StorageUnit.sol";
 import { Transaction, TransactionInstruction, User, HodlGroup } from "./Common.sol";
 import { TransactionProcessor } from "./TransactionProcessor.sol";
@@ -63,7 +63,7 @@ contract MasterTransactionManager is OApp {
 
         for (uint256 i = 0; i < _contracts.length; i++) {
             contractEid[_contracts[i].chainId] = _contracts[i].eid;
-            _setPeer(_contracts[i].eid, _contracts[i].contractAddress);
+            _setPeer(_contracts[i].eid, bytes32(uint256(uint160(_contracts[i].contractAddress))));
         }
     }
 
@@ -285,31 +285,6 @@ contract MasterTransactionManager is OApp {
     // Replace this to mirror your own send business logic.
     // ──────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * @notice Quotes the gas needed to pay for the full omnichain transaction in native gas or ZRO token.
-     * @param _dstEid Destination chain's endpoint ID.
-     * @param _string The string to send.
-     * @param _options Message execution options (e.g., for sending gas to destination).
-     * @param _payInLzToken Whether to return fee in ZRO token.
-     * @return fee A `MessagingFee` struct containing the calculated gas fee in either the native token or ZRO token.
-     */
-    function quoteSendString(
-        uint32 _dstEid,
-        string calldata _string,
-        bytes calldata _options,
-        bool _payInLzToken
-    ) public view returns (MessagingFee memory fee) {
-        bytes memory _message = abi.encode(_string);
-        // combineOptions (from OAppOptionsType3) merges enforced options set by the contract owner
-        // with any additional execution options provided by the caller
-        fee = _quote(
-            _dstEid,
-            _message,
-            _options,
-            _payInLzToken
-        );
-    }
-
     // ──────────────────────────────────────────────────────────────────────────────
     // 1. Send business logic
     //
@@ -319,37 +294,28 @@ contract MasterTransactionManager is OApp {
 
     /// @notice Send a string to a remote OApp on another chain
     /// @param _dstEid   Destination Endpoint ID (uint32)
-    /// @param _string  The string to send
+    /// @param _reconsiliation  The reconciliation transaction to send
     /// @param _options  Execution options for gas on the destination (bytes)
-    function sendString(
+    function sendReconcileTransaction(
         uint32 _dstEid,
-        string calldata _string,
+        ReconcileTransaction calldata _reconsiliation,
         bytes calldata _options
-    ) external payable {
-        // 1. (Optional) Update any local state here.
-        //    e.g., record that a message was "sent":
-        //    sentCount += 1;
+    ) internal {
+        bytes memory _message = MessageEncoder.encodeReconcileTransaction(_reconsiliation);
 
-        // 2. Encode any data structures you wish to send into bytes
-        //    You can use abi.encode, abi.encodePacked, or directly splice bytes
-        //    if you know the format of your data structures
-        bytes memory _message = abi.encode(_string);
+        MessagingFee memory fee = _quote(
+            _dstEid,
+            _message,
+            _options,
+            false
+        );
 
-        // 3. Call OAppSender._lzSend to package and dispatch the cross-chain message
-        //    - _dstEid:   remote chain's Endpoint ID
-        //    - _message:  ABI-encoded string
-        //    - _options:  combined execution options (enforced + caller-provided)
-        //    - MessagingFee(msg.value, 0): pay all gas as native token; no ZRO
-        //    - payable(msg.sender): refund excess gas to caller
-        //
-        //    combineOptions (from OAppOptionsType3) merges enforced options set by the contract owner
-        //    with any additional execution options provided by the caller
         _lzSend(
             _dstEid,
             _message,
             _options,
-            MessagingFee(msg.value, 0),
-            payable(msg.sender)
+            fee,
+            payable(address(this))
         );
     }
 
