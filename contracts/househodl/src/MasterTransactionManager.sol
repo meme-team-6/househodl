@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import { OApp, MessagingFee, Origin } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import { CreateHodl, HodlCreated, AddUserToHodl, SubmitTransaction, ReconcileTransaction, MessageEncoder } from "./Messages.sol";
 import { StorageUnit } from "./StorageUnit.sol";
-import { Transaction, TransactionInstruction, User, HodlGroup } from "./Common.sol";
+import { Transaction, User, HodlGroup, Set } from "./Common.sol";
 import { TransactionProcessor } from "./TransactionProcessor.sol";
 
 contract MasterTransactionManager is OApp {
@@ -13,18 +13,7 @@ contract MasterTransactionManager is OApp {
     /** A mapping of the chainId to the endpoint ID */
     mapping(uint => uint32) public contractEid;
     
-    // Deployment tracking
-    struct DeploymentInfo {
-        uint256 deploymentBlock;
-        uint256 deploymentTimestamp;
-        address deployer;
-        uint256 chainId;
-        string version;
-        address layerZeroEndpoint;
-        address storageUnitAddress;
-    }
     
-    DeploymentInfo public deploymentInfo;
     
     error InvalidStorageUnit();
 
@@ -159,6 +148,25 @@ contract MasterTransactionManager is OApp {
             params.amountUsd,
             params.userChainId
         );
+
+        ReconcileTransaction memory reconciliation = TransactionProcessor.calculateTransactionSplits({
+            hodlId: params.hodlId,
+            transaction: transaction,
+            hodlUsers: storageUnit.getHodlUserAddresses(params.hodlId)
+        });
+
+        uint[] memory connectedChains = listConnectedChainIds(hodlUsers);
+
+        for (uint i = 0; i < connectedChains.length; i++) {
+            uint32 chainId = uint32(connectedChains[i]);
+            if (chainId != params.userChainId && contractEid[chainId] != 0) {
+                sendReconcileTransaction(
+                    contractEid[chainId],
+                    reconciliation,
+                    bytes("")
+                );
+            }
+        }
 
         return transactionId;
     }
@@ -383,30 +391,6 @@ contract MasterTransactionManager is OApp {
         return userHodls;
     }
 
-    // ──────────────────────────────────────────────────────────────────────────────
-    // Deployment Info Functions
-    // ──────────────────────────────────────────────────────────────────────────────
-
-    function getDeploymentInfo() external view returns (
-        uint256 deploymentBlock,
-        uint256 deploymentTimestamp,
-        address deployer,
-        uint256 chainId,
-        string memory version,
-        address layerZeroEndpoint,
-        address storageUnitAddress
-    ) {
-        return (
-            deploymentInfo.deploymentBlock,
-            deploymentInfo.deploymentTimestamp,
-            deploymentInfo.deployer,
-            deploymentInfo.chainId,
-            deploymentInfo.version,
-            deploymentInfo.layerZeroEndpoint,
-            deploymentInfo.storageUnitAddress
-        );
-    }
-
 
     // ──────────────────────────────────────────────────────────────────────────────
     // 0. (Optional) Quote business logic
@@ -428,8 +412,8 @@ contract MasterTransactionManager is OApp {
     /// @param _options  Execution options for gas on the destination (bytes)
     function sendReconcileTransaction(
         uint32 _dstEid,
-        ReconcileTransaction calldata _reconsiliation,
-        bytes calldata _options
+        ReconcileTransaction memory _reconsiliation,
+        bytes memory _options
     ) internal {
         bytes memory _message = MessageEncoder.encodeReconcileTransaction(_reconsiliation);
 
@@ -474,5 +458,31 @@ contract MasterTransactionManager is OApp {
         // Decode the incoming bytes into a string
         abi.decode(_message, (string));
         // Custom logic would go here
+    }
+
+    function listConnectedChainIds(User[] memory userList) private pure returns (uint[] memory) {
+        uint[] memory tempChains = new uint[](userList.length);
+        uint uniqueCount = 0;
+        
+        for (uint i = 0; i < userList.length; i++) {
+            bool exists = false;
+            for (uint j = 0; j < uniqueCount; j++) {
+                if (tempChains[j] == userList[i].chainId) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                tempChains[uniqueCount] = userList[i].chainId;
+                uniqueCount++;
+            }
+        }
+        
+        uint[] memory result = new uint[](uniqueCount);
+        for (uint i = 0; i < uniqueCount; i++) {
+            result[i] = tempChains[i];
+        }
+        
+        return result;
     }
 }

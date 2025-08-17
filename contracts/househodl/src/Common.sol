@@ -38,5 +38,10 @@ struct Proportion {
     int256 proportion; // out of 1e8
 }
 
+struct Set {
+    uint[] values;
+    mapping (uint => bool) is_in;
+}
+
 // TODO: Create enum repersenting all the chains that we work on
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Transaction, User, Proportion} from "./Common.sol";
+import {Transaction, User, Proportion, Share} from "./Common.sol";
 import {ReconcileTransaction} from "./Messages.sol";
 import {StorageUnit} from "./StorageUnit.sol";
 
@@ -85,11 +85,21 @@ library TransactionProcessor {
             totalBasisPoints += transaction.shares[i].percentageInBasisPoints;
         }
 
-        
+        // For each hodl user, find their corresponding share
         for (uint256 i = 0; i < hodlUsers.length; i++) {
+            int256 userProportion = 0;
+            
+            // Find the user's share in the transaction shares array
+            for (uint256 j = 0; j < transaction.shares.length; j++) {
+                if (transaction.shares[j].userAddress == hodlUsers[i]) {
+                    userProportion = int256((transaction.shares[j].percentageInBasisPoints * 1e8) / totalBasisPoints);
+                    break;
+                }
+            }
+            
             proportions[i] = Proportion({
                 user: hodlUsers[i],
-                proportion: int256((transaction.shares[i].percentageInBasisPoints * 1e8) / totalBasisPoints)
+                proportion: userProportion
             });
         }
 
