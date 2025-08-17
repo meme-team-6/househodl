@@ -21,6 +21,7 @@ type TransactionResponse = {
 };
 
 type Transaction = {
+  vanityName: string;
   amountUsd: number;
   hodlId: string;
   id: string;
@@ -52,6 +53,7 @@ export const useHodlPendingTransactions = (hodlId: string) => {
 
         setTransactions(
           typedData.map((transaction) => ({
+            vanityName: "Name",
             amountUsd: convertCurrencyBigint(transaction.amountUsd),
             hodlId: transaction.hodlId,
             id: transaction.id,

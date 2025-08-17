@@ -38,7 +38,9 @@ export const useReverseEns = (address: string) => {
         args: [address as any],
       })
       .then((value) => {
-        setEnsName(value);
+        if (value) {
+          setEnsName(value);
+        }
       });
   }, [address, rpcProvider.defaultProvider?.provider]);
 

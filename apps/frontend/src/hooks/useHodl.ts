@@ -44,7 +44,6 @@ export const useHodl = (hodlId: string) => {
         setHodl({
           name: fromHex(typedHodl.vanityName as `0x${string}`, "string"),
           spendLimit: convertCurrencyBigint(typedHodl.spendLimit),
-          pendingExpenses: 185,
           members: typedHodl.users.map((user) => ({
             chain: user.chainId.toString(),
             address: user.userAddress,

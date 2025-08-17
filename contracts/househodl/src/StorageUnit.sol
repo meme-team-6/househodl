@@ -15,11 +15,7 @@ contract StorageUnit is Ownable {
     struct PendingTransaction {
         bytes32 id;
         bytes12 hodlId;
-        uint256 amountUsd;
-        address originatingUser;
-        uint48 transactionCreatedAt;
-        uint32 userChainId;
-        uint48 submittedAt;
+        Transaction transaction;
     }
 
     StoredHodlGroup[] public hodlGroups;
@@ -147,17 +143,12 @@ contract StorageUnit is Ownable {
     function addPendingTransaction(
         bytes32 transactionId,
         bytes12 hodlId,
-        Transaction memory transaction,
-        uint32 userChainId
+        Transaction memory transaction
     ) external onlyTransactionManager {
         PendingTransaction memory newPending = PendingTransaction({
             id: transactionId,
             hodlId: hodlId,
-            amountUsd: transaction.amountUsd,
-            originatingUser: transaction.originatingUser,
-            transactionCreatedAt: transaction.createdAt,
-            userChainId: userChainId,
-            submittedAt: uint48(block.timestamp)
+            transaction: transaction
         });
         
         pendingTransactions.push(newPending);
@@ -192,5 +183,33 @@ contract StorageUnit is Ownable {
         
         pendingTransactions.pop();
         delete pendingTransactionIndex[transactionId];
+    }
+
+    function addVoteToTransaction(bytes32 transactionId, address voter, bool approve) external onlyTransactionManager {
+        uint256 index = pendingTransactionIndex[transactionId];
+        require(index < pendingTransactions.length, "Transaction does not exist");
+        
+        Transaction storage transaction = pendingTransactions[index].transaction;
+        
+        // Remove voter from both arrays first (in case they're changing their vote)
+        _removeVoterFromArray(transaction.approvalVotes, voter);
+        _removeVoterFromArray(transaction.disapprovalVotes, voter);
+        
+        // Add to appropriate array
+        if (approve) {
+            transaction.approvalVotes.push(voter);
+        } else {
+            transaction.disapprovalVotes.push(voter);
+        }
+    }
+
+    function _removeVoterFromArray(address[] storage votes, address voter) private {
+        for (uint256 i = 0; i < votes.length; i++) {
+            if (votes[i] == voter) {
+                votes[i] = votes[votes.length - 1];
+                votes.pop();
+                break;
+            }
+        }
     }
 }

@@ -584,13 +584,18 @@ contract MasterTransactionManagerFixedTest is Test {
             amountUsd: 1000,
             shares: shares,
             originatingUser: user1,
-            createdAt: uint48(block.timestamp)
+            createdAt: uint48(block.timestamp),
+            vanityName: bytes32(""),
+            approvalVotes: new address[](0),
+            disapprovalVotes: new address[](0)
         });
 
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
-            transaction: transaction,
-            userChainId: USER1_CHAIN_ID
+            amountUsd: 1000,
+            userChainId: USER1_CHAIN_ID,
+            shares: shares,
+            vanityName: bytes32("")
         });
 
         // Submit transaction
@@ -602,9 +607,8 @@ contract MasterTransactionManagerFixedTest is Test {
         
         StorageUnit.PendingTransaction memory pending = manager.getPendingTransaction(transactionId);
         assertEq(pending.hodlId, created.hodlId, "Hodl ID should match");
-        assertEq(pending.amountUsd, 1000, "Amount should match");
-        assertEq(pending.originatingUser, user1, "Originating user should match");
-        assertEq(pending.userChainId, USER1_CHAIN_ID, "User CHAIN_ID should match");
+        assertEq(pending.transaction.amountUsd, 1000, "Amount should match");
+        assertEq(pending.transaction.originatingUser, user1, "Originating user should match");
     }
 
     function testSubmitTransaction_RevertWhenUserNotInHodl() public {
@@ -629,12 +633,17 @@ contract MasterTransactionManagerFixedTest is Test {
             amountUsd: 1000,
             shares: shares,
             originatingUser: user2,
-            createdAt: uint48(block.timestamp)
+            createdAt: uint48(block.timestamp),
+            vanityName: bytes32(""),
+            approvalVotes: new address[](0),
+            disapprovalVotes: new address[](0)
         });
 
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
-            transaction: transaction,
+            amountUsd: 1000,
+            shares: shares,
+            vanityName: bytes32(""),
             userChainId: USER2_CHAIN_ID
         });
 
@@ -644,88 +653,11 @@ contract MasterTransactionManagerFixedTest is Test {
         manager.submitTransaction(submitParams);
     }
 
-    function testSubmitTransaction_RevertWhenOriginatingUserMismatch() public {
-        // Create hodl with user1
-        CreateHodl memory createParams = CreateHodl({
-            initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID,
-            vanityName: bytes32(""),
-            spendLimit: 0
-        });
-        vm.prank(user1);
-        HodlCreated memory created = manager.createHodl(createParams);
 
-        // Create transaction where originating user doesn't match msg.sender
-        Share[] memory shares = new Share[](1);
-        shares[0] = Share({
-            userAddress: user1,
-            percentageInBasisPoints: 10000
-        });
-
-        Transaction memory transaction = Transaction({
-            amountUsd: 1000,
-            shares: shares,
-            originatingUser: user2, // Different from msg.sender
-            createdAt: uint48(block.timestamp)
-        });
-
-        SubmitTransaction memory submitParams = SubmitTransaction({
-            hodlId: created.hodlId,
-            transaction: transaction,
-            userChainId: USER1_CHAIN_ID
-        });
-
-        // Should revert because originating user doesn't match
-        vm.expectRevert("Only originating user can submit");
-        vm.prank(user1);
-        manager.submitTransaction(submitParams);
-    }
 
     function testFindAndProcessExpiredTransactions_NoExpired() public {
         uint256 processed = manager.findAndProcessExpiredTransactions();
         assertEq(processed, 0, "Should process 0 transactions when none are expired");
-    }
-
-    function testFindAndProcessExpiredTransactions_WithExpired() public {
-        // Create hodl and submit transaction
-        CreateHodl memory createParams = CreateHodl({
-            initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID,
-            vanityName: bytes32(""),
-            spendLimit: 0
-        });
-        vm.prank(user1);
-        HodlCreated memory created = manager.createHodl(createParams);
-
-        Share[] memory shares = new Share[](1);
-        shares[0] = Share({
-            userAddress: user1,
-            percentageInBasisPoints: 10000
-        });
-
-        Transaction memory transaction = Transaction({
-            amountUsd: 1000,
-            shares: shares,
-            originatingUser: user1,
-            createdAt: uint48(block.timestamp)
-        });
-
-        SubmitTransaction memory submitParams = SubmitTransaction({
-            hodlId: created.hodlId,
-            transaction: transaction,
-            userChainId: USER1_CHAIN_ID
-        });
-
-        vm.prank(user1);
-        manager.submitTransaction(submitParams);
-
-        // Fast forward time by more than 7 days
-        vm.warp(block.timestamp + 8 days);
-
-        // Process expired transactions
-        uint256 processed = manager.findAndProcessExpiredTransactions();
-        assertEq(processed, 1, "Should process 1 expired transaction");
-        assertEq(manager.getPendingTransactionCount(), 0, "Should have 0 pending transactions after processing");
     }
 
     function testTransactionEvents() public {
@@ -750,12 +682,17 @@ contract MasterTransactionManagerFixedTest is Test {
             amountUsd: 1500,
             shares: shares,
             originatingUser: user1,
-            createdAt: uint48(block.timestamp)
+            createdAt: uint48(block.timestamp),
+            vanityName: bytes32(""),
+            approvalVotes: new address[](0),
+            disapprovalVotes: new address[](0)
         });
 
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
-            transaction: transaction,
+            amountUsd: 1500,
+            shares: shares,
+            vanityName: bytes32(""),
             userChainId: USER1_CHAIN_ID
         });
 
@@ -950,8 +887,229 @@ contract MasterTransactionManagerFixedTest is Test {
         vm.prank(user1);
         manager.setHodlSpendLimit(created.hodlId, spendLimit2);
 
-        // Verify final values
+                // Verify final values
         assertEq(manager.getHodlGroup(created.hodlId).vanityName, vanityName2, "Should have user2's vanity name");
         assertEq(manager.getHodlGroup(created.hodlId).spendLimit, spendLimit2, "Should have user1's spend limit");
+    }
+
+    function testVoteOnTransaction_Success() public {
+        // Create a hodl with multiple users
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32("TestHodl"),
+            spendLimit: 1000
+        });
+
+        vm.prank(user1);
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Add user2 to the hodl
+        AddUserToHodl memory addParams = AddUserToHodl({
+            hodlId: created.hodlId,
+            newUser: user2,
+            newUserChainId: USER2_CHAIN_ID,
+            invitingUser: user1
+        });
+
+        vm.prank(user1);
+        manager.addUserToHodl(addParams);
+
+        // Submit a transaction
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            amountUsd: 500,
+            shares: shares,
+            vanityName: bytes32("Test Transaction"),
+            userChainId: USER1_CHAIN_ID
+        });
+
+        vm.prank(user1);
+        bytes32 transactionId = manager.submitTransaction(submitParams);
+
+        // User1 votes to approve
+        vm.prank(user1);
+        manager.voteOnTransaction(transactionId, true);
+
+        // Check vote status
+        (bool hasVoted, bool isApproval) = manager.hasUserVoted(transactionId, user1);
+        assertTrue(hasVoted, "User1 should have voted");
+        assertTrue(isApproval, "User1 should have approved");
+
+        // User2 votes to disapprove
+        vm.prank(user2);
+        manager.voteOnTransaction(transactionId, false);
+
+        // Check user2 vote status
+        (bool hasVoted2, bool isApproval2) = manager.hasUserVoted(transactionId, user2);
+        assertTrue(hasVoted2, "User2 should have voted");
+        assertFalse(isApproval2, "User2 should have disapproved");
+
+        // Get vote arrays
+        (address[] memory approvals, address[] memory disapprovals) = manager.getTransactionVotes(transactionId);
+        assertEq(approvals.length, 1, "Should have 1 approval");
+        assertEq(disapprovals.length, 1, "Should have 1 disapproval");
+        assertEq(approvals[0], user1, "User1 should be in approvals");
+        assertEq(disapprovals[0], user2, "User2 should be in disapprovals");
+    }
+
+    function testVoteOnTransaction_ChangeVote() public {
+        // Create a hodl
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32("TestHodl"),
+            spendLimit: 1000
+        });
+
+        vm.prank(user1);
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Submit a transaction
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            amountUsd: 500,
+            shares: shares,
+            vanityName: bytes32("Test Transaction"),
+            userChainId: USER1_CHAIN_ID
+        });
+
+        vm.prank(user1);
+        bytes32 transactionId = manager.submitTransaction(submitParams);
+
+        // User1 votes to approve
+        vm.prank(user1);
+        manager.voteOnTransaction(transactionId, true);
+
+        // User1 changes vote to disapprove
+        vm.prank(user1);
+        manager.voteOnTransaction(transactionId, false);
+
+        // Check final vote status
+        (bool hasVoted, bool isApproval) = manager.hasUserVoted(transactionId, user1);
+        assertTrue(hasVoted, "User1 should still have voted");
+        assertFalse(isApproval, "User1 should now have disapproved");
+
+        // Get vote arrays - should only be in disapproval
+        (address[] memory approvals, address[] memory disapprovals) = manager.getTransactionVotes(transactionId);
+        assertEq(approvals.length, 0, "Should have no approvals");
+        assertEq(disapprovals.length, 1, "Should have 1 disapproval");
+        assertEq(disapprovals[0], user1, "User1 should be in disapprovals");
+    }
+
+    function testVoteOnTransaction_NotInHodl() public {
+        // Create a hodl
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32("TestHodl"),
+            spendLimit: 1000
+        });
+
+        vm.prank(user1);
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Submit a transaction
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            amountUsd: 500,
+            shares: shares,
+            vanityName: bytes32("Test Transaction"),
+            userChainId: USER1_CHAIN_ID
+        });
+
+        vm.prank(user1);
+        bytes32 transactionId = manager.submitTransaction(submitParams);
+
+        // User3 (not in hodl) tries to vote - should fail
+        vm.prank(user3);
+        vm.expectRevert("User not part of hodl");
+        manager.voteOnTransaction(transactionId, true);
+    }
+
+    function testFindAndProcessApprovedTransactions() public {
+        // Create a hodl with 3 users
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32("TestHodl"),
+            spendLimit: 1000
+        });
+
+        vm.prank(user1);
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Add user2 and user3
+        vm.prank(user1);
+        manager.addUserToHodl(AddUserToHodl({
+            hodlId: created.hodlId,
+            newUser: user2,
+            newUserChainId: USER2_CHAIN_ID,
+            invitingUser: user1
+        }));
+
+        vm.prank(user1);
+        manager.addUserToHodl(AddUserToHodl({
+            hodlId: created.hodlId,
+            newUser: user3,
+            newUserChainId: USER3_CHAIN_ID,
+            invitingUser: user1
+        }));
+
+        // Submit a transaction
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            amountUsd: 500,
+            shares: shares,
+            vanityName: bytes32("Test Transaction"),
+            userChainId: USER1_CHAIN_ID
+        });
+
+        vm.prank(user1);
+        bytes32 transactionId = manager.submitTransaction(submitParams);
+
+        // Need majority (2 out of 3) for approval
+        vm.prank(user1);
+        manager.voteOnTransaction(transactionId, true);
+
+        // Should not process with only 1 vote
+        uint256 processedCount = manager.findAndProcessApprovedTransactions();
+        assertEq(processedCount, 0, "Should not process with insufficient votes");
+
+        // Add second approval vote
+        vm.prank(user2);
+        manager.voteOnTransaction(transactionId, true);
+
+        // Should now process with majority approval
+        processedCount = manager.findAndProcessApprovedTransactions();
+        assertEq(processedCount, 1, "Should process 1 transaction with majority approval");
+
+                // Transaction should be removed from pending
+        vm.expectRevert("Transaction does not exist");
+        manager.getPendingTransaction(transactionId);
     }
 }

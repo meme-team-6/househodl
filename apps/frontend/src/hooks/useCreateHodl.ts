@@ -8,9 +8,11 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 
 import { useWallet } from "./useWallet";
 import { stringToHex } from "viem";
+import { useSwitchNetwork } from "@dynamic-labs/sdk-react-core";
 
 export const useCreateHodl = () => {
   const wallet = useWallet();
+  const switchNetwork = useSwitchNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,6 +22,8 @@ export const useCreateHodl = () => {
         return;
       }
       setIsLoading(true);
+
+      switchNetwork({ wallet, network: masterTransactionManagerChainId });
 
       try {
         const walletClient = await wallet.getWalletClient();

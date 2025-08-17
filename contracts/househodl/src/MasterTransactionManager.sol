@@ -41,6 +41,12 @@ contract MasterTransactionManager is OApp {
         uint256 processedCount
     );
 
+    event TransactionVoteSubmitted(
+        bytes32 indexed transactionId,
+        address indexed voter,
+        bool isApproval
+    );
+
     event HodlVanityNameUpdated(
         bytes12 indexed hodlId,
         address indexed updatedBy,
@@ -107,7 +113,6 @@ contract MasterTransactionManager is OApp {
     // ──────────────────────────────────────────────────────────────────────────────
 
     function submitTransaction(SubmitTransaction memory params) external returns (bytes32) {
-        require(params.transaction.originatingUser == msg.sender, "Only originating user can submit");
         
         User[] memory hodlUsers = storageUnit.getHodlUsers(params.hodlId);
         require(hodlUsers.length > 0, "Hodl does not exist");
@@ -125,28 +130,73 @@ contract MasterTransactionManager is OApp {
             abi.encodePacked(
                 params.hodlId,
                 msg.sender,
-                params.transaction.amountUsd,
+                params.amountUsd,
                 block.timestamp,
                 block.number
             )
         );
 
+        Transaction memory transaction = Transaction({
+            originatingUser: msg.sender,
+            amountUsd: params.amountUsd,
+            shares: params.shares,
+            vanityName: params.vanityName,
+            createdAt: uint48(block.timestamp),
+            approvalVotes: new address[](0),
+            disapprovalVotes: new address[](0)
+        });
+
         storageUnit.addPendingTransaction(
             transactionId,
             params.hodlId,
-            params.transaction,
-            params.userChainId
+            transaction
         );
 
         emit TransactionSubmitted(
             transactionId,
             params.hodlId,
             msg.sender,
-            params.transaction.amountUsd,
+            params.amountUsd,
             params.userChainId
         );
 
         return transactionId;
+    }
+
+    function voteOnTransaction(bytes32 transactionId, bool approve) external {
+        StorageUnit.PendingTransaction memory pendingTx = storageUnit.getPendingTransaction(transactionId);
+        
+        User[] memory hodlUsers = storageUnit.getHodlUsers(pendingTx.hodlId);
+        require(hodlUsers.length > 0, "Hodl does not exist");
+        
+        bool userInHodl = false;
+        for (uint256 i = 0; i < hodlUsers.length; i++) {
+            if (hodlUsers[i].userAddress == msg.sender) {
+                userInHodl = true;
+                break;
+            }
+        }
+        require(userInHodl, "User not part of hodl");
+
+        storageUnit.addVoteToTransaction(transactionId, msg.sender, approve);
+
+        emit TransactionVoteSubmitted(transactionId, msg.sender, approve);
+    }
+
+    function findAndProcessApprovedTransactions() external returns (uint256 processedCount) {
+        bytes32[] memory approvedIds = TransactionProcessor.findApprovedTransactions(storageUnit);
+        
+        if (approvedIds.length == 0) {
+            return 0;
+        }
+
+        for (uint256 i = 0; i < approvedIds.length; i++) {
+            storageUnit.removePendingTransaction(approvedIds[i]);
+        }
+
+        emit TransactionsProcessed(approvedIds, approvedIds.length);
+        
+        return approvedIds.length;
     }
 
     function findAndProcessExpiredTransactions() external returns (uint256 processedCount) {
@@ -197,6 +247,34 @@ contract MasterTransactionManager is OApp {
         }
         
         return transactions;
+    }
+
+    function getTransactionVotes(bytes32 transactionId) external view returns (
+        address[] memory approvalVotes,
+        address[] memory disapprovalVotes
+    ) {
+        StorageUnit.PendingTransaction memory pendingTx = storageUnit.getPendingTransaction(transactionId);
+        return (pendingTx.transaction.approvalVotes, pendingTx.transaction.disapprovalVotes);
+    }
+
+    function hasUserVoted(bytes32 transactionId, address user) external view returns (bool hasVoted, bool isApproval) {
+        StorageUnit.PendingTransaction memory pendingTx = storageUnit.getPendingTransaction(transactionId);
+        
+        // Check approval votes
+        for (uint256 i = 0; i < pendingTx.transaction.approvalVotes.length; i++) {
+            if (pendingTx.transaction.approvalVotes[i] == user) {
+                return (true, true);
+            }
+        }
+        
+        // Check disapproval votes
+        for (uint256 i = 0; i < pendingTx.transaction.disapprovalVotes.length; i++) {
+            if (pendingTx.transaction.disapprovalVotes[i] == user) {
+                return (true, false);
+            }
+        }
+        
+        return (false, false);
     }
 
     function setSatellite(ContractAddresses[] memory _contracts) external onlyOwner {

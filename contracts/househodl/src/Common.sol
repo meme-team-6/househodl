@@ -9,9 +9,9 @@ struct Share {
 struct User {
     address userAddress;
     uint32 chainId; // original chain
-    uint256 trackedBalUsd;
-    uint256 realDebtUsd;
-    uint256 heldUsd;
+    int256 trackedBalUsd;
+    int256 realDebtUsd;
+    int256 heldUsd;
 }
 
 struct HodlGroup {
@@ -27,6 +27,9 @@ struct Transaction {
     address originatingUser;
     // Unix time (seconds) when this transaction was recorded. Use block.timestamp cast to uint48 for gas efficiency.
     uint48 createdAt;
+    bytes32 vanityName;
+    address[] approvalVotes;
+    address[] disapprovalVotes;
 }
 
 struct TransactionInstruction {
