@@ -77,9 +77,9 @@ function GroupTransaction() {
     },
     voters: [
       {
-        name: "Alex Chen",
+        name: "Russell Bloxwich",
         vote: "approve",
-        avatar: "https://avatars.githubusercontent.com/u/16860528",
+        avatar: "https://avatars.githubusercontent.com/u/23006558",
       },
       {
         name: "Sarah Kim",

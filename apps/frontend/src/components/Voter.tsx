@@ -1,7 +1,7 @@
 import { useReverseEns } from "@/hooks/useENS";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 
-const avatar = "https://avatars.githubusercontent.com/u/16860528";
+const avatar = "https://avatars.githubusercontent.com/u/23006558";
 
 const getVoteIcon = (vote: VoteState) => {
   if (vote === VoteState.Approve)

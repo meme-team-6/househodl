@@ -37,7 +37,7 @@ import { useCreateTransaction } from "./hooks/useCreateTransaction";
 // Mock data - in real app this would come from API based on id
 const defaultAvatars = [
   {
-    imageUrl: "https://avatars.githubusercontent.com/u/16860528",
+    imageUrl: "https://avatars.githubusercontent.com/u/23006558",
     profileUrl: "https://github.com/dillionverma",
   },
   {
