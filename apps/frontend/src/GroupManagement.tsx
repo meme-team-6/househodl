@@ -351,7 +351,15 @@ const GroupManagement = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">${hodl?.pendingExpenses}</p>
+                  <p className="text-2xl font-bold">
+                    $
+                    {upcomingExpenses
+                      .reduce(
+                        (total, transaction) => total + transaction.amountUsd,
+                        0
+                      )
+                      .toLocaleString()}
+                  </p>
                 </CardContent>
               </Card>
             </div>

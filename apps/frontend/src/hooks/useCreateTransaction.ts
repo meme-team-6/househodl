@@ -9,10 +9,12 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { useWallet } from "./useWallet";
 
 import { useHodl } from "./useHodl";
+import { useSwitchNetwork } from "@dynamic-labs/sdk-react-core";
 
 export const useCreateTransaction = (hodlId: string) => {
   const wallet = useWallet();
   const { hodl } = useHodl(hodlId);
+  const switchNetwork = useSwitchNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,6 +24,8 @@ export const useCreateTransaction = (hodlId: string) => {
         return;
       }
       setIsLoading(true);
+
+      switchNetwork({ wallet, network: masterTransactionManagerChainId });
 
       try {
         const walletClient = await wallet.getWalletClient();
