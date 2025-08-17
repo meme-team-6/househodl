@@ -210,14 +210,14 @@ contract Satellite is OApp, OAppOptionsType3 {
             }
 
             // Get total shares for this token
-            int256 totalShares = int256(totalSharesAssignedPerToken[proportions[i].tokenAddr]);
+            int256 totalShares = int256(totalSharesAssignedPerToken[ownership.tokenAddr]);
             require(totalShares > 0, "No shares to rearrange");
 
             // Get total aTokens and their USDC value
-            int256 totalATokens = int256(aaveManager.GetTotalAvailableAaveToken(proportions[i].tokenAddr));
+            int256 totalATokens = int256(aaveManager.GetTotalAvailableAaveToken(ownership.tokenAddr));
             int256 pricePerShare = int256(totalATokens) / int256(totalShares);
 
-            int256 totalATokensAsUSDC = int256(aaveManager.GetTokenBalanceAsUSDC(uint256(totalATokens), proportions[i].tokenAddr));
+            int256 totalATokensAsUSDC = int256(aaveManager.GetTokenBalanceAsUSDC(uint256(totalATokens), ownership.tokenAddr));
 
             require(totalATokensAsUSDC > 0, "No USDC value in pool");
 
