@@ -11,9 +11,11 @@ import {
 import { ArrowLeft, Receipt, CheckCircle, XCircle } from "lucide-react";
 import { useHodl } from "./hooks/useHodl";
 import { VotingStatus } from "./VotingStatus";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { usePendingTransaction } from "./hooks/useTransaction";
 import { useReverseEns } from "./hooks/useEns";
+import { useVoteOnTransaction } from "./hooks/useVoteOnTransaction";
+import { useUserVoteStatus } from "./hooks/useUserVoteStatus";
 
 // Extend Window interface to include our custom property
 declare global {
@@ -22,50 +24,46 @@ declare global {
   }
 }
 
-interface TransactionData {
-  id: string;
-  title: string;
-  description: string;
-  amount: number;
-  submittedBy: string;
-  submittedAt: string;
-  status: "pending" | "approved" | "rejected";
-  votesRequired: number;
-  currentVotes: {
-    approve: number;
-    reject: number;
-  };
-  voters: Array<{
-    name: string;
-    vote: "approve" | "reject" | null;
-    avatar: string;
-  }>;
-}
-
 function GroupTransaction() {
   const { id, transactionId } = useParams<{
     id: string;
     transactionId: string;
   }>();
 
-  const { isLoading: isHodlLoading, hodl } = useHodl(id || "");
-  const { loading: isTxLoading, transaction } = usePendingTransaction({
+  const { hodl } = useHodl(id || "");
+  const { transaction, refetch: refetchTransaction } = usePendingTransaction({
     transactionId: transactionId || "",
   });
+  const {
+    voteOnTransaction,
+    isLoading: isVoting,
+    error: votingError,
+    clearError,
+  } = useVoteOnTransaction();
+  const {
+    voteStatus,
+    loading: voteStatusLoading,
+    refetch: refetchVoteStatus,
+  } = useUserVoteStatus(transactionId || "");
+  const [voteSuccess, setVoteSuccess] = useState<string | null>(null);
 
   const status = useMemo(() => {
     if (
-      transaction?.transaction.approvalVotes.length ??
-      0 > (hodl?.members.length ?? 1) / 2
+      (transaction?.transaction.approvalVotes.length ?? 0) >
+      (hodl?.members.length ?? 1) / 2
     )
       return "approved";
     else if (
-      transaction?.transaction.disapprovalVotes.length ??
-      0 > (hodl?.members.length ?? 1) / 2
+      (transaction?.transaction.disapprovalVotes.length ?? 0) >
+      (hodl?.members.length ?? 1) / 2
     )
       return "rejected";
     else return "pending";
-  }, []);
+  }, [
+    transaction?.transaction.approvalVotes.length,
+    transaction?.transaction.disapprovalVotes.length,
+    hodl?.members.length,
+  ]);
 
   const { ensName } = useReverseEns(
     transaction?.transaction.originatingUser ||
@@ -97,48 +95,36 @@ function GroupTransaction() {
     }
   };
 
-  // Mock transaction data
-  const transactionData: TransactionData = {
-    id: transactionId || "1",
-    title: "Team dinner expenses",
-    description:
-      "Dinner at local restaurant for team building event. Includes appetizers, main courses, and drinks for 4 people.",
-    amount: 120,
-    submittedBy: "Alex Chen",
-    submittedAt: "2 hours ago",
-    status: "pending",
-    votesRequired: 3,
-    currentVotes: {
-      approve: 1,
-      reject: 0,
-    },
-    voters: [
-      {
-        name: "Russell Bloxwich",
-        vote: "approve",
-        avatar: "https://avatars.githubusercontent.com/u/23006558",
-      },
-      {
-        name: "Sarah Kim",
-        vote: null,
-        avatar: "https://avatars.githubusercontent.com/u/20110627",
-      },
-      {
-        name: "Mike Johnson",
-        vote: null,
-        avatar: "https://avatars.githubusercontent.com/u/106103625",
-      },
-      {
-        name: "Emma Davis",
-        vote: null,
-        avatar: "https://avatars.githubusercontent.com/u/59228569",
-      },
-    ],
-  };
+  const handleVote = async (vote: "approve" | "reject") => {
+    if (!transactionId) {
+      console.error("Transaction ID is missing");
+      return;
+    }
 
-  const handleVote = (vote: "approve" | "reject") => {
-    // In a real app, this would make an API call
-    console.log(`Voted ${vote} on transaction ${transactionId}`);
+    clearError(); // Clear any previous errors
+    setVoteSuccess(null); // Clear any previous success messages
+
+    const approve = vote === "approve";
+    console.log(`Voting ${vote} on transaction ${transactionId}`);
+
+    try {
+      const txHash = await voteOnTransaction(transactionId, approve);
+      if (txHash) {
+        console.log(`Vote submitted successfully: ${txHash}`);
+        setVoteSuccess(`Your ${vote} vote has been submitted successfully!`);
+
+        // Refetch the transaction data to get updated vote counts
+        // Note: There might be a delay due to blockchain confirmation time
+        setTimeout(() => {
+          refetchTransaction();
+          refetchVoteStatus();
+          setVoteSuccess(null); // Clear success message after refetch
+        }, 3000); // Wait 3 seconds for blockchain to confirm
+      }
+    } catch (error) {
+      console.error("Failed to vote:", error);
+      // Error is already handled in the hook and stored in votingError
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -233,7 +219,7 @@ function GroupTransaction() {
             />
 
             {/* Voting Actions */}
-            {transactionData.status === "pending" && (
+            {status === "pending" && (
               <Card>
                 <CardHeader>
                   <CardTitle>Cast Your Vote</CardTitle>
@@ -243,22 +229,79 @@ function GroupTransaction() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={() => handleVote("approve")}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Approve Transaction
-                    </Button>
-                    <Button
-                      onClick={() => handleVote("reject")}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Reject Transaction
-                    </Button>
+                  <div className="space-y-4">
+                    {/* Show current vote status */}
+                    {voteStatus?.hasVoted && (
+                      <div
+                        className={`p-3 rounded-md border ${
+                          voteStatus.isApproval
+                            ? "bg-green-50 border-green-200"
+                            : "bg-red-50 border-red-200"
+                        }`}
+                      >
+                        <p
+                          className={`text-sm ${
+                            voteStatus.isApproval
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          You have already voted to{" "}
+                          {voteStatus.isApproval ? "approve" : "reject"} this
+                          transaction.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Show voting success message */}
+                    {voteSuccess && (
+                      <div className="p-3 rounded-md bg-green-50 border border-green-200">
+                        <p className="text-sm text-green-600">{voteSuccess}</p>
+                      </div>
+                    )}
+
+                    {/* Show voting error if any */}
+                    {votingError && (
+                      <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                        <p className="text-sm text-red-600">{votingError}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-4">
+                      <Button
+                        onClick={() => handleVote("approve")}
+                        disabled={isVoting || voteStatus?.hasVoted}
+                        className={`flex-1 disabled:opacity-50 ${
+                          voteStatus?.hasVoted && voteStatus.isApproval
+                            ? "bg-green-600 hover:bg-green-700"
+                            : "bg-green-600 hover:bg-green-700"
+                        }`}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {isVoting
+                          ? "Voting..."
+                          : voteStatus?.hasVoted && voteStatus.isApproval
+                            ? "Already Approved"
+                            : "Approve Transaction"}
+                      </Button>
+                      <Button
+                        onClick={() => handleVote("reject")}
+                        disabled={isVoting || voteStatus?.hasVoted}
+                        variant="destructive"
+                        className={`flex-1 disabled:opacity-50 ${
+                          voteStatus?.hasVoted && !voteStatus.isApproval
+                            ? "opacity-100"
+                            : ""
+                        }`}
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        {isVoting
+                          ? "Voting..."
+                          : voteStatus?.hasVoted && !voteStatus.isApproval
+                            ? "Already Rejected"
+                            : "Reject Transaction"}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
