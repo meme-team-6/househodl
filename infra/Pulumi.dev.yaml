@@ -4,3 +4,5 @@ config:
   app:zone_domain: househodl.app
   aws:region: ap-southeast-2
   app:zone_id: Z01159383O4N042P82Z1A
+  app:open_api_key:
+    secure: v1:PKquKATC0lJjscfs:Q1Qlta5X/V6mltVVtndeywVMiSq0v58ueRIxqqXx0MJEv7ZnUoDQm5ET5h0iIqYsQ+Md5MEftRkAepdO3nb1TWHNjfj/YtBZ5B2e8+0CaCeNi8FZHxD6In/cWcNFu10SBTVlu6I7Bf0XFFAA/2f3FGu9hL7Rmv0/0xzEgytAv6gCoEqxTinsAx9qED8kIMJtgEcQ8hrSfWnYVY8DcVvfngu7pM2Kz3rYG4Hwc7/TcDi2vBZe

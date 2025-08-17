@@ -8,16 +8,20 @@ import { convertCurrencyBigint } from "@/lib/utils";
 import { evmProvidersSelector } from "@dynamic-labs/ethereum-core";
 import { useRpcProviders } from "@dynamic-labs/sdk-react-core";
 import { useEffect, useState } from "react";
+import { fromHex } from "viem";
 
 type TransactionResponse = {
-  amountUsd: bigint;
   hodlId: string;
   id: string;
-  originatingUser: string;
-  submittedAt: number;
-  submittingUser: string;
-  transactionCreatedAt: number;
-  userChainId: number;
+  transaction: {
+    amountUsd: bigint;
+    approvalVotes: string[];
+    createdAt: number;
+    disapprovalVotes: string[];
+    originatingUser: string;
+    shares: never[];
+    vanityName: string;
+  };
 };
 
 type Transaction = {
@@ -50,18 +54,21 @@ export const useHodlPendingTransactions = (hodlId: string) => {
       })
       .then((data) => {
         const typedData = data as TransactionResponse[];
-
+        console.log({ data });
         setTransactions(
           typedData.map((transaction) => ({
-            vanityName: "Name",
-            amountUsd: convertCurrencyBigint(transaction.amountUsd),
+            vanityName: fromHex(
+              transaction.transaction.vanityName as `0x${string}`,
+              "string"
+            ),
+            amountUsd: convertCurrencyBigint(transaction.transaction.amountUsd),
             hodlId: transaction.hodlId,
             id: transaction.id,
-            originatingUser: transaction.originatingUser,
-            submittedAt: transaction.submittedAt,
-            submittingUser: transaction.submittingUser,
-            transactionCreatedAt: transaction.transactionCreatedAt,
-            userChainId: transaction.userChainId,
+            originatingUser: transaction.transaction.originatingUser,
+            submittedAt: transaction.transaction.createdAt,
+            submittingUser: transaction.transaction.originatingUser,
+            transactionCreatedAt: transaction.transaction.createdAt,
+            userChainId: masterTransactionManagerChainId,
           }))
         );
       })

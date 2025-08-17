@@ -12,6 +12,10 @@ import {
   sendUnauthorized,
 } from "../utils/responses";
 
+import { generateObject } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { ok, Result } from "neverthrow";
+
 export const getUser = wrapHandlerWithValidation({
   params: z.object({ userId: z.string() }),
 })(async (req) => {
@@ -34,7 +38,7 @@ export const createUser = wrapHandlerWithValidation({
     password: z.string(),
   }),
 })(async (req) => {
-  console.log("Creating user")
+  console.log("Creating user");
   if (req.body["x-secret-key"] !== "imadmin") {
     return sendUnauthorized();
   }
@@ -49,7 +53,6 @@ export const createUser = wrapHandlerWithValidation({
       case UserServiceErrorType.Duplicate:
         return sendConflict();
       case UserServiceErrorType.PasswordHashingError:
-
         return sendInternalServerError();
     }
   }
@@ -77,3 +80,57 @@ export const login = wrapHandlerWithValidation({
 
   return sendOk({ token: result.value });
 });
+
+export const scanImageForTotal = wrapHandlerWithValidation({
+  body: z.object({
+    image: z.string(),
+  }),
+})(async (req) => {
+  console.log("Here")
+  const classifyResult = await classifyImage({ image: req.body.image });
+
+  if (classifyResult.isErr()) {
+    throw new Error("oh no");
+  }
+
+  return sendOk({ total: classifyResult.value.total });
+});
+
+const openai = createOpenAI({
+  compatibility: "strict",
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+type ClassifyImageOptions = {
+  image: string;
+};
+export const classifyImage = async (
+  options: ClassifyImageOptions
+): Promise<Result<{ total: number }, never>> => {
+  const { image } = options;
+  const { object } = await generateObject({
+    model: openai("gpt-4o-mini"),
+    schema: z.object({
+      total: z.number(),
+    }),
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Tell me what the total is for the receipt in the included image.`,
+          },
+          {
+            type: "image",
+            image,
+          },
+        ],
+      },
+    ],
+  });
+
+  console.log("Received labels, ", object);
+
+  return ok(object);
+};

@@ -17,6 +17,8 @@ const appConfig = new pulumi.Config("app");
 const zoneDomain = appConfig.require("zone_domain");
 const zoneId = appConfig.require("zone_id");
 
+const openApiKey = appConfig.requireSecret("open_api_key");
+
 const namespace = `ethglobal25-${pulumi.getStack()}`;
 const commitHash = execSync("git rev-parse --short HEAD").toString().trim();
 const amplifyServiceBucket = createServiceBucket({
@@ -70,6 +72,7 @@ const environment = resolveMap({
   AWS_SECRET_ACCESS_KEY: secretAccessKey,
   AWS_ROLE_TO_ASSUME: roleToAssume,
   AWS_REGION: awsRegion,
+  OPEN_API_KEY: openApiKey,
 });
 
 deployLightsailService({

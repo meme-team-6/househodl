@@ -1,7 +1,7 @@
 export const ensReverseChainId = 11155111; // sepolia
 export const masterTransactionManagerChainId = 11155111; // sepolia
 export const masterTransactionManagerAddress =
-  "0x7ede73c6653C8D41a3890cdeB93f97A5a5e0b5Eb";
+  "0xf5CbB6b8c336BE5e9A1015B2884b82D8904Ff1d7";
 export const masterTransactionManagerAbi = [
   {
     inputs: [
@@ -175,6 +175,31 @@ export const masterTransactionManagerAbi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "bytes32",
+        name: "transactionId",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "voter",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "isApproval",
+        type: "bool",
+      },
+    ],
+    name: "TransactionVoteSubmitted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "bytes32[]",
         name: "transactionIds",
@@ -296,6 +321,15 @@ export const masterTransactionManagerAbi = [
   },
   {
     inputs: [],
+    name: "findAndProcessApprovedTransactions",
+    outputs: [
+      { internalType: "uint256", name: "processedCount", type: "uint256" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "findAndProcessExpiredTransactions",
     outputs: [
       { internalType: "uint256", name: "processedCount", type: "uint256" },
@@ -336,13 +370,9 @@ export const masterTransactionManagerAbi = [
             components: [
               { internalType: "address", name: "userAddress", type: "address" },
               { internalType: "uint32", name: "chainId", type: "uint32" },
-              {
-                internalType: "uint256",
-                name: "trackedBalUsd",
-                type: "uint256",
-              },
-              { internalType: "uint256", name: "realDebtUsd", type: "uint256" },
-              { internalType: "uint256", name: "heldUsd", type: "uint256" },
+              { internalType: "int256", name: "trackedBalUsd", type: "int256" },
+              { internalType: "int256", name: "realDebtUsd", type: "int256" },
+              { internalType: "int256", name: "heldUsd", type: "int256" },
             ],
             internalType: "struct User[]",
             name: "users",
@@ -367,9 +397,9 @@ export const masterTransactionManagerAbi = [
         components: [
           { internalType: "address", name: "userAddress", type: "address" },
           { internalType: "uint32", name: "chainId", type: "uint32" },
-          { internalType: "uint256", name: "trackedBalUsd", type: "uint256" },
-          { internalType: "uint256", name: "realDebtUsd", type: "uint256" },
-          { internalType: "uint256", name: "heldUsd", type: "uint256" },
+          { internalType: "int256", name: "trackedBalUsd", type: "int256" },
+          { internalType: "int256", name: "realDebtUsd", type: "int256" },
+          { internalType: "int256", name: "heldUsd", type: "int256" },
         ],
         internalType: "struct User[]",
         name: "",
@@ -396,16 +426,48 @@ export const masterTransactionManagerAbi = [
         components: [
           { internalType: "bytes32", name: "id", type: "bytes32" },
           { internalType: "bytes12", name: "hodlId", type: "bytes12" },
-          { internalType: "uint256", name: "amountUsd", type: "uint256" },
-          { internalType: "address", name: "originatingUser", type: "address" },
           {
-            internalType: "uint48",
-            name: "transactionCreatedAt",
-            type: "uint48",
+            components: [
+              { internalType: "uint256", name: "amountUsd", type: "uint256" },
+              {
+                components: [
+                  {
+                    internalType: "address",
+                    name: "userAddress",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "percentageInBasisPoints",
+                    type: "uint256",
+                  },
+                ],
+                internalType: "struct Share[]",
+                name: "shares",
+                type: "tuple[]",
+              },
+              {
+                internalType: "address",
+                name: "originatingUser",
+                type: "address",
+              },
+              { internalType: "uint48", name: "createdAt", type: "uint48" },
+              { internalType: "bytes32", name: "vanityName", type: "bytes32" },
+              {
+                internalType: "address[]",
+                name: "approvalVotes",
+                type: "address[]",
+              },
+              {
+                internalType: "address[]",
+                name: "disapprovalVotes",
+                type: "address[]",
+              },
+            ],
+            internalType: "struct Transaction",
+            name: "transaction",
+            type: "tuple",
           },
-          { internalType: "address", name: "submittingUser", type: "address" },
-          { internalType: "uint32", name: "userChainId", type: "uint32" },
-          { internalType: "uint48", name: "submittedAt", type: "uint48" },
         ],
         internalType: "struct StorageUnit.PendingTransaction",
         name: "",
@@ -423,9 +485,38 @@ export const masterTransactionManagerAbi = [
     type: "function",
   },
   {
+    inputs: [
+      { internalType: "bytes32", name: "transactionId", type: "bytes32" },
+    ],
+    name: "getTransactionVotes",
+    outputs: [
+      { internalType: "address[]", name: "approvalVotes", type: "address[]" },
+      {
+        internalType: "address[]",
+        name: "disapprovalVotes",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [{ internalType: "address", name: "user", type: "address" }],
     name: "getUserHodls",
     outputs: [{ internalType: "bytes12[]", name: "", type: "bytes12[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "bytes32", name: "transactionId", type: "bytes32" },
+      { internalType: "address", name: "user", type: "address" },
+    ],
+    name: "hasUserVoted",
+    outputs: [
+      { internalType: "bool", name: "hasVoted", type: "bool" },
+      { internalType: "bool", name: "isApproval", type: "bool" },
+    ],
     stateMutability: "view",
     type: "function",
   },
@@ -457,16 +548,48 @@ export const masterTransactionManagerAbi = [
         components: [
           { internalType: "bytes32", name: "id", type: "bytes32" },
           { internalType: "bytes12", name: "hodlId", type: "bytes12" },
-          { internalType: "uint256", name: "amountUsd", type: "uint256" },
-          { internalType: "address", name: "originatingUser", type: "address" },
           {
-            internalType: "uint48",
-            name: "transactionCreatedAt",
-            type: "uint48",
+            components: [
+              { internalType: "uint256", name: "amountUsd", type: "uint256" },
+              {
+                components: [
+                  {
+                    internalType: "address",
+                    name: "userAddress",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "percentageInBasisPoints",
+                    type: "uint256",
+                  },
+                ],
+                internalType: "struct Share[]",
+                name: "shares",
+                type: "tuple[]",
+              },
+              {
+                internalType: "address",
+                name: "originatingUser",
+                type: "address",
+              },
+              { internalType: "uint48", name: "createdAt", type: "uint48" },
+              { internalType: "bytes32", name: "vanityName", type: "bytes32" },
+              {
+                internalType: "address[]",
+                name: "approvalVotes",
+                type: "address[]",
+              },
+              {
+                internalType: "address[]",
+                name: "disapprovalVotes",
+                type: "address[]",
+              },
+            ],
+            internalType: "struct Transaction",
+            name: "transaction",
+            type: "tuple",
           },
-          { internalType: "address", name: "submittingUser", type: "address" },
-          { internalType: "uint32", name: "userChainId", type: "uint32" },
-          { internalType: "uint48", name: "submittedAt", type: "uint48" },
         ],
         internalType: "struct StorageUnit.PendingTransaction[]",
         name: "",
@@ -608,38 +731,22 @@ export const masterTransactionManagerAbi = [
       {
         components: [
           { internalType: "bytes12", name: "hodlId", type: "bytes12" },
+          { internalType: "uint32", name: "userChainId", type: "uint32" },
+          { internalType: "uint256", name: "amountUsd", type: "uint256" },
           {
             components: [
-              { internalType: "uint256", name: "amountUsd", type: "uint256" },
+              { internalType: "address", name: "userAddress", type: "address" },
               {
-                components: [
-                  {
-                    internalType: "address",
-                    name: "userAddress",
-                    type: "address",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "percentageInBasisPoints",
-                    type: "uint256",
-                  },
-                ],
-                internalType: "struct Share[]",
-                name: "shares",
-                type: "tuple[]",
+                internalType: "uint256",
+                name: "percentageInBasisPoints",
+                type: "uint256",
               },
-              {
-                internalType: "address",
-                name: "originatingUser",
-                type: "address",
-              },
-              { internalType: "uint48", name: "createdAt", type: "uint48" },
             ],
-            internalType: "struct Transaction",
-            name: "transaction",
-            type: "tuple",
+            internalType: "struct Share[]",
+            name: "shares",
+            type: "tuple[]",
           },
-          { internalType: "uint32", name: "userChainId", type: "uint32" },
+          { internalType: "bytes32", name: "vanityName", type: "bytes32" },
         ],
         internalType: "struct SubmitTransaction",
         name: "params",
@@ -654,6 +761,16 @@ export const masterTransactionManagerAbi = [
   {
     inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "bytes32", name: "transactionId", type: "bytes32" },
+      { internalType: "bool", name: "approve", type: "bool" },
+    ],
+    name: "voteOnTransaction",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

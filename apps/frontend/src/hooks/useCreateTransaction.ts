@@ -10,6 +10,7 @@ import { useWallet } from "./useWallet";
 
 import { useHodl } from "./useHodl";
 import { useSwitchNetwork } from "@dynamic-labs/sdk-react-core";
+import { stringToHex } from "viem";
 
 export const useCreateTransaction = (hodlId: string) => {
   const wallet = useWallet();
@@ -32,18 +33,14 @@ export const useCreateTransaction = (hodlId: string) => {
         const args = [
           [
             hodlId,
-            [
-              BigInt(amount * 1e3) * BigInt(1e3),
-
-              (hodl?.members || []).map((member) => [
-                member.address,
-                (1 / hodl!.members.length) * 100,
-              ]),
-
-              wallet.address,
-              Math.floor(Date.now() / 1000),
-            ],
             masterTransactionManagerChainId,
+            BigInt(amount * 1e3) * BigInt(1e3),
+
+            (hodl?.members || []).map((member) => [
+              member.address,
+              (1 / hodl!.members.length) * 100,
+            ]),
+            stringToHex(name, { size: 32 }),
           ],
         ];
 

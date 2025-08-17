@@ -1,5 +1,10 @@
 import express, { Router } from "express";
-import { createUser, getUser, login } from "./controllers/user.controller";
+import {
+  createUser,
+  getUser,
+  login,
+  scanImageForTotal,
+} from "./controllers/user.controller";
 import * as jwt from "express-jwt";
 import { getCredentialProvider } from "./utils/credential-provider";
 import { configureDynamoDb } from "./config";
@@ -35,6 +40,7 @@ const init = async () => {
 
   apiRouter.post("/users", createUser);
   apiRouter.post("/login", login);
+  apiRouter.post("/scan-image", scanImageForTotal);
 
   const authenticatedRouter = Router();
   authenticatedRouter.use(
