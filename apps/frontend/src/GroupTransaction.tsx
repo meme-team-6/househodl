@@ -8,14 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ArrowLeft,
-  Receipt,
-  Users,
-  Clock,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft, Receipt, CheckCircle, XCircle } from "lucide-react";
 import { useHodl } from "./hooks/useHodl";
 import { VotingStatus } from "./VotingStatus";
 import { useMemo, useEffect } from "react";
@@ -60,9 +53,28 @@ function GroupTransaction() {
     transactionId: transactionId || "",
   });
 
+  const status = useMemo(() => {
+    if (
+      transaction?.transaction.approvalVotes.length ??
+      0 > (hodl?.members.length ?? 1) / 2
+    )
+      return "approved";
+    else if (
+      transaction?.transaction.disapprovalVotes.length ??
+      0 > (hodl?.members.length ?? 1) / 2
+    )
+      return "rejected";
+    else return "pending";
+  }, []);
+
   const ensName = useReverseEns(
     transaction?.transaction.originatingUser ||
       "0x0000000000000000000000000000000000000000"
+  );
+
+  const transactionAmount = useMemo(
+    () => Number(transaction?.transaction.amountUsd ?? 0n) / 1000000,
+    [transaction?.transaction.amountUsd]
   );
 
   const vanityName = useMemo(() => {
@@ -177,10 +189,9 @@ function GroupTransaction() {
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transactionData.status)}`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}
                   >
-                    {transactionData.status.charAt(0).toUpperCase() +
-                      transactionData.status.slice(1)}
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
                   </span>
                 </div>
               </CardHeader>
@@ -188,24 +199,24 @@ function GroupTransaction() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-2">Description</h4>
-                    <p className="text-muted-foreground">
-                      {transactionData.description}
+                    <p className="text-muted-foreground italic">
+                      No Description
                     </p>
                   </div>
                   <div className="flex items-center gap-6">
                     <div>
                       <h4 className="font-medium">Amount</h4>
                       <p className="text-2xl font-bold">
-                        ${transactionData.amount}
+                        ${transactionAmount.toFixed(2)}
                       </p>
                     </div>
                     <div>
                       <h4 className="font-medium">Per Person</h4>
                       <p className="text-2xl font-bold">
                         $
-                        {Math.round(
-                          transactionData.amount / (hodl?.members.length || 1)
-                        )}
+                        {(
+                          transactionAmount / (hodl?.members.length || 1)
+                        ).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -213,7 +224,13 @@ function GroupTransaction() {
               </CardContent>
             </Card>
 
-            <VotingStatus hodlId={id || ""} />
+            <VotingStatus
+              hodlId={id || ""}
+              approvedVotes={transaction?.transaction.approvalVotes.length ?? 0}
+              disapprovalVotes={
+                transaction?.transaction.disapprovalVotes.length ?? 0
+              }
+            />
 
             {/* Voting Actions */}
             {transactionData.status === "pending" && (

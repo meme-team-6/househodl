@@ -12,6 +12,8 @@ interface PendingTransaction {
   hodlId: string;
   id: string;
   transaction: {
+    approvalVotes: unknown[];
+    disapprovalVotes: unknown[];
     amountUsd: bigint;
     createdAt: number;
     originatingUser: string;

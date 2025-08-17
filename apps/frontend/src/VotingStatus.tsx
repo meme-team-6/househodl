@@ -9,11 +9,15 @@ import {
 import { useHodl } from "./hooks/useHodl";
 import { Voter, VoteState } from "./components/Voter";
 
-const transactionData = {
-  currentVotes: { approve: 3, reject: 1 },
-};
-
-export const VotingStatus = ({ hodlId }: { hodlId: string }) => {
+export const VotingStatus = ({
+  hodlId,
+  approvedVotes,
+  disapprovalVotes,
+}: {
+  hodlId: string;
+  approvedVotes: number;
+  disapprovalVotes: number;
+}) => {
   const { isLoading, hodl } = useHodl(hodlId);
 
   if (isLoading) {
@@ -32,9 +36,7 @@ export const VotingStatus = ({ hodlId }: { hodlId: string }) => {
           Voting Status
         </CardTitle>
         <CardDescription>
-          {transactionData.currentVotes.approve +
-            transactionData.currentVotes.reject}{" "}
-          of {hodl?.members.length} votes required
+          {disapprovalVotes} of {hodl?.members.length} votes required
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -43,13 +45,13 @@ export const VotingStatus = ({ hodlId }: { hodlId: string }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 rounded-lg bg-green-50">
               <div className="text-2xl font-bold text-green-600">
-                {transactionData.currentVotes.approve}
+                {approvedVotes}
               </div>
               <div className="text-sm text-green-600">Approve</div>
             </div>
             <div className="text-center p-4 rounded-lg bg-red-50">
               <div className="text-2xl font-bold text-red-600">
-                {transactionData.currentVotes.reject}
+                {disapprovalVotes}
               </div>
               <div className="text-sm text-red-600">Reject</div>
             </div>
