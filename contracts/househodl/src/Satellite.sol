@@ -9,6 +9,8 @@ import {MessageType, MessageEncoder, CreateHodl, Stake, HodlUsersResponse, Recon
 import {AaveMultiTokenManager} from "./AaveSupplyBorrow.sol";
 import {Proportion} from "./Common.sol";
 
+
+
 contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
     uint16 public constant SEND = 1;
@@ -23,6 +25,8 @@ contract Satellite is OApp, OAppOptionsType3 {
 
     mapping(bytes20 => TokenOwnership) public tokenOwnershipsPerUserHodl;
     mapping(address => uint256) public totalSharesAssignedPerToken;
+
+    event TokenBalanceUpdated(address indexed user, address indexed token, uint256 newBalance);
 
     /// @notice Emitted when a message is received and parsed
     event MessageReceived(string msgType, string data);
@@ -251,6 +255,8 @@ contract Satellite is OApp, OAppOptionsType3 {
 
         //Assume this works
         aaveManager.SupplyTokens(msg.sender, amount, tokenAddr);
+        uint256 newBalance = aaveManager.GetTotalAvailableAaveToken(tokenAddr);
+        emit TokenBalanceUpdated(msg.sender, tokenAddr, newBalance);
 
         uint256 pricePerShare;
         uint256 sharesAssociatedWithStake;
@@ -278,7 +284,43 @@ contract Satellite is OApp, OAppOptionsType3 {
 
         ownership.shareAmount += sharesAssociatedWithStake;
         tokenOwnershipsPerUserHodl[userHodlKey] = ownership;
+        // emit after state update if you want the latest share amount
+        emit TokenBalanceUpdated(msg.sender, tokenAddr, newBalance);
 
+    }
+
+    function LeaveHodl(bytes12 hodl) public
+    {
+        // Construct the userHodlKey
+        bytes20 userHodlKey = bytes20(abi.encodePacked(hodl, msg.sender));
+        TokenOwnership storage ownership = tokenOwnershipsPerUserHodl[userHodlKey];
+
+        // Check if the user is part of this hodl
+        require(ownership.owner == msg.sender, "Not a member of this hodl");
+
+        address tokenAddr = ownership.tokenAddr;
+        uint256 userShares = ownership.shareAmount;
+        require(userShares > 0, "No shares to withdraw");
+
+        uint256 totalShares = totalSharesAssignedPerToken[tokenAddr];
+        require(totalShares > 0, "No shares exist for this token");
+
+        uint256 totalATokens = aaveManager.GetTotalAvailableAaveToken(tokenAddr);
+
+        // Calculate user's aToken balance
+        uint256 userATokenAmount = (userShares * totalATokens) / totalShares;
+
+        // Withdraw user's aTokens to their address
+        if (userATokenAmount > 0) {
+            aaveManager.WithdrawTokens(msg.sender, tokenAddr, userATokenAmount);
+        }
+
+        totalSharesAssignedPerToken[tokenAddr] -= userShares;
+
+        // Remove user from mapping
+        delete tokenOwnershipsPerUserHodl[userHodlKey];
+
+        emit TokenBalanceUpdated(msg.sender, tokenAddr, 0);
     }
 
 }

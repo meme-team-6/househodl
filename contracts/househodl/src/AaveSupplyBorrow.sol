@@ -123,8 +123,25 @@ contract AaveMultiTokenManager {
     /// @param asset ERC20 token address to withdraw
     /// @param amount Amount to withdraw (type `uint(-1)` for full balance)
     function withdrawERC20(
-        address userAddr,address asset, uint256 amount) external {
+        address userAddr,address asset, uint256 amount) public {
         pool.withdraw(asset, amount, userAddr);
+    }
+
+    /// @notice Repay borrowed ERC20 token
+    /// @param asset Token to repay
+    /// @param amount Amount to repay
+    /// @param interestRateMode 1 = Stable, 2 = Variable
+    function repayERC20 (
+        address userAddr,address asset, uint256 amount, uint256 interestRateMode) public {
+        IERC20(asset).approve(address(pool), amount);
+        pool.repay(asset, amount, interestRateMode, address(this));
+        IERC20(asset).transferFrom(address(this),userAddr,  amount);
+    }
+
+    function WithdrawTokens(address userAddr, address tokenAddr, uint256 amount) public 
+    {
+        (address aToken, ,) = dataProvider.getReserveTokensAddresses(tokenAddr);
+        repayERC20(userAddr, aToken, amount, 2);
     }
 
     /// @notice Supply native token (ETH, AVAX, MATIC) using Aave's Gateway
@@ -147,17 +164,6 @@ contract AaveMultiTokenManager {
         address userAddr,address asset, uint256 amount, uint256 interestRateMode) external {
         pool.borrow(asset, amount, interestRateMode, 0, address(this));
         IERC20(asset).transfer(userAddr, amount);
-    }
-
-    /// @notice Repay borrowed ERC20 token
-    /// @param asset Token to repay
-    /// @param amount Amount to repay
-    /// @param interestRateMode 1 = Stable, 2 = Variable
-    function repayERC20(
-        address userAddr,address asset, uint256 amount, uint256 interestRateMode) external {
-        IERC20(asset).transferFrom(userAddr, address(this), amount);
-        IERC20(asset).approve(address(pool), amount);
-        pool.repay(asset, amount, interestRateMode, address(this));
     }
 
     /// @notice Repay borrowed native token using Gateway
