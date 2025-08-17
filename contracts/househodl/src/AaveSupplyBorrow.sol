@@ -123,8 +123,8 @@ contract AaveMultiTokenManager {
     /// @param asset ERC20 token address to withdraw
     /// @param amount Amount to withdraw (type `uint(-1)` for full balance)
     function withdrawERC20(
-        address userAddr,address asset, uint256 amount) public {
-        pool.withdraw(asset, amount, userAddr);
+        address targetAddr, address asset, uint256 amount) public {
+        pool.withdraw(asset, amount, targetAddr);
     }
 
     /// @notice Repay borrowed ERC20 token
@@ -132,16 +132,33 @@ contract AaveMultiTokenManager {
     /// @param amount Amount to repay
     /// @param interestRateMode 1 = Stable, 2 = Variable
     function repayERC20 (
-        address userAddr,address asset, uint256 amount, uint256 interestRateMode) public {
+        address targetAddr, address asset, uint256 amount, uint256 interestRateMode) public returns (uint256) {
         IERC20(asset).approve(address(pool), amount);
-        pool.repay(asset, amount, interestRateMode, address(this));
-        IERC20(asset).transferFrom(address(this),userAddr,  amount);
+        return pool.repay(asset, amount, interestRateMode, targetAddr);
     }
 
     function WithdrawTokens(address userAddr, address tokenAddr, uint256 amount) public 
     {
+        (uint256 decimals, uint256 ltv, , , , , , , , ) = dataProvider.getReserveConfigurationData(tokenAddr);
+        
+        uint256 usdcAmount = getUSDCValue(tokenAddr, amount, uint8(decimals));
+        uint256 usdcRequiredToRepay = (usdcAmount * ltv) / 10000; // ltv is in basis points (e.g. 7500 for 75%)
+
+        uint256 repaidAmount = repayERC20(address(this), usdc, usdcRequiredToRepay, 2);
+
+        (decimals, ltv, , , , , , , , ) = dataProvider.getReserveConfigurationData(tokenAddr);
         (address aToken, ,) = dataProvider.getReserveTokensAddresses(tokenAddr);
-        repayERC20(userAddr, aToken, amount, 2);
+        uint256 amountAvailableForWithdraw = IERC20(aToken).balanceOf(address(this));
+        // Choose the max of amountAvailableForWithdraw and amount
+        if (amountAvailableForWithdraw < amount) {
+           
+            withdrawERC20(address(this), tokenAddr, amountAvailableForWithdraw);
+            IERC20(tokenAddr).transfer(userAddr, amountAvailableForWithdraw);
+        }
+        else {
+            withdrawERC20(address(this), tokenAddr, amount);
+            IERC20(tokenAddr).transfer(userAddr, amount);
+        }
     }
 
     /// @notice Supply native token (ETH, AVAX, MATIC) using Aave's Gateway
