@@ -1,15 +1,27 @@
+
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
 import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {MessageType, MessageEncoder, CreateHodl} from "./Messages.sol";
+import {MessageType, MessageEncoder, CreateHodl, Stake, HodlUsersResponse} from "./Messages.sol";
+import {AaveMultiTokenManager} from "./AaveSupplyBorrow.sol";
 
 contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
     uint16 public constant SEND = 1;
     uint32 internal mtmEid;
+    AaveMultiTokenManager internal aaveManager;
+    struct TokenOwnership{
+        address owner;
+        bytes12 hodlId;
+        address tokenAddr;
+        uint256 shareAmount;
+    }
+
+    mapping(bytes20 => TokenOwnership) public tokenOwnershipsPerUserHodl;
+    mapping(address => uint256) public totalSharesAssignedPerToken;
 
     /// @notice Emitted when a message is received and parsed
     event MessageReceived(string msgType, string data);
@@ -21,14 +33,16 @@ contract Satellite is OApp, OAppOptionsType3 {
         address _endpoint,
         address _owner,
         uint32 _mtmEid,
-        bytes32 _mtmAddr
+        bytes32 _mtmAddr,
+        address _aaveManager
     ) OApp(_endpoint, _owner) {
         if (_owner != _msgSender()) {
             _transferOwnership(_owner);
         }
-
+        
         mtmEid = _mtmEid;
         _setPeer(mtmEid, _mtmAddr);
+        aaveManager = AaveMultiTokenManager(_aaveManager);
     }
 
     /**
@@ -87,6 +101,30 @@ contract Satellite is OApp, OAppOptionsType3 {
         );
     }
 
+    function ConfirmStake(
+        uint32 _dstEid,
+        Stake memory _stake,
+        bytes calldata _options
+    ) external payable {
+        bytes memory _message = MessageEncoder.encodeStake(_stake);
+
+        MessagingFee memory fee = quotePacket(
+            _dstEid,
+            _message,
+            _options,
+            false
+        );
+
+        _lzSend(
+            _dstEid,
+            _message,
+            combineOptions(_dstEid, SEND, _options),
+            fee,
+            payable(address(this))
+        );
+    }
+    
+
     /// @notice Invoked by OAppReceiver when EndpointV2.lzReceive is called
     /// @dev   _origin    Metadata (source chain, sender address, nonce)
     /// @dev   _guid      Global unique ID for tracking this message
@@ -101,5 +139,73 @@ contract Satellite is OApp, OAppOptionsType3 {
         bytes calldata /*_extraData*/
     ) internal override {
         MessageType msgType = MessageEncoder.determineType(_message);
+        if (msgType == MessageType.HODL_USERS_RESPONSE) {
+            HodlUsersResponse memory resp = MessageEncoder.asHodlUsersResponse(_message);
+            // emit HodlUsersResponse(resp.hodlId, resp.users);
+        }
     }
+
+    function GetBalanceOfToken(bytes12 hodlId, address tokenAddr) external view returns (uint256) {
+        bytes20 userHodlKey = bytes20(abi.encodePacked(hodlId, msg.sender));
+        TokenOwnership storage ownership = tokenOwnershipsPerUserHodl[userHodlKey];
+
+        require(ownership.owner == msg.sender, "Not owner of this hodlId");
+        
+        uint256 totalATokens = aaveManager.GetTotalAvailableAaveToken(tokenAddr);
+        uint256 totalShares = totalSharesAssignedPerToken[tokenAddr];
+
+        if (totalShares == 0) {
+            return 0;
+        }
+
+        // User's balance = (user shares / total shares) * total aTokens
+        return (ownership.shareAmount * totalATokens) / totalShares;
+    }
+
+    function StakeUsingAave(bytes12 hodlId, uint256 amount, address tokenAddr) external payable {
+
+        // First the associated AaveMultiTokenManager should be interrogated to 
+        // find out how many aTokens of given token are present in the pool
+        // The shares owned by this user divided by total shares * amount of aTokens present in the contract
+        // = amount of the crypto that this user owns
+        // Price per share is calculate by doing amount of aTokens divided by number of shares issued. 
+
+        // Now when staking more, the amount staked is divided by the price per share to give 
+        // the number of shares associated with this stake.
+
+        // Get the total amount of aTokens for this token in the pool
+        uint256 totalATokensPreStake = aaveManager.GetTotalAvailableAaveToken(tokenAddr);
+        uint256 totalShares = totalSharesAssignedPerToken[tokenAddr];
+
+        //Assume this works
+        aaveManager.SupplyTokens(msg.sender, amount, tokenAddr);
+
+        uint256 pricePerShare;
+        uint256 sharesAssociatedWithStake;
+        if(totalATokensPreStake == 0){
+            require(totalShares == 0, "Tokens exist, but no shares assigned somehow!");
+            totalShares = amount;
+            pricePerShare = amount;
+        }
+        else {
+            pricePerShare = totalATokensPreStake / totalShares;
+        }
+
+        sharesAssociatedWithStake = amount / pricePerShare;
+        totalSharesAssignedPerToken[tokenAddr] += sharesAssociatedWithStake;
+
+        bytes20 userHodlKey = bytes20(abi.encodePacked(hodlId, msg.sender));
+        TokenOwnership storage ownership = tokenOwnershipsPerUserHodl[userHodlKey];
+
+        if(ownership.owner == address(0))
+        {
+            ownership.owner = msg.sender;
+            ownership.hodlId = hodlId;
+            ownership.tokenAddr = tokenAddr;
+        }
+
+        ownership.shareAmount += sharesAssociatedWithStake;
+        tokenOwnershipsPerUserHodl[userHodlKey] = ownership;
+    }
+
 }

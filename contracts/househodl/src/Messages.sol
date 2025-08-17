@@ -10,7 +10,17 @@ enum MessageType {
     HODL_CREATED,
     JOIN_HODL,
     SUBMIT_TRANSACTION,
-    RECONCILE_TRANSACTION
+    RECONCILE_TRANSACTION,
+    HODL_USERS_RESPONSE,
+    STAKE
+}
+struct GetHodlUsersRequest {
+    bytes12 hodlId;
+}
+
+struct HodlUsersResponse {
+    bytes12 hodlId;
+    address[] users;
 }
 
 struct CreateHodl {
@@ -18,6 +28,12 @@ struct CreateHodl {
     uint32 initialUserChainId;
     bytes32 vanityName;
     uint256 spendLimit; 
+}
+
+struct Stake {
+    address user;
+    bytes12 hodlId;
+    uint256 amount;
 }
 
 struct HodlCreated {
@@ -43,12 +59,33 @@ struct ReconcileTransaction {
 }
 
 library MessageEncoder {
+    function encodeHodlUsersResponse(HodlUsersResponse memory resp) public pure returns (bytes memory) {
+        return abi.encode(MessageType.HODL_USERS_RESPONSE, resp);
+    }
+
+    function asHodlUsersResponse(bytes memory packet) public pure returns (HodlUsersResponse memory sentMsg) {
+        MessageType _type;
+        (_type, sentMsg) = abi.decode(packet, (MessageType, HodlUsersResponse));
+    }
+    
+    function encodeStake(
+        Stake memory _stake
+    ) public pure returns (bytes memory) {
+        return abi.encode(MessageType.STAKE, _stake);
+    }
+
+    function asStake(
+        bytes memory packet
+    ) public pure returns (Stake memory sentMsg) {
+        MessageType _type;
+        (_type, sentMsg) = abi.decode(packet, (MessageType, Stake));
+    }
     function encodeCreateHodl(
         CreateHodl memory _createHodl
     ) public pure returns (bytes memory) {
         return abi.encode(MessageType.CREATE_HOLD, _createHodl);
     }
-    
+
     function encodeReconcileTransaction(
         ReconcileTransaction memory _reconcileTransaction
     ) public pure returns (bytes memory) {

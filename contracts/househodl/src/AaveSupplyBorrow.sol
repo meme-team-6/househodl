@@ -61,39 +61,67 @@ contract AaveMultiTokenManager {
     function supplyERC20(address asset, uint256 amount) private {
         IERC20(asset).approve(address(pool), amount);
         pool.supply(asset, amount, address(this), 0);
-        (address aToken,address stableDebtToken,address variableDebtToken) = dataProvider.getReserveTokensAddresses(asset);
-        // uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
-        // emit Supply(asset, amount, aTokenBalance);
     }
 
-    function Stake(
-        uint256 amount, 
-        bytes12 hodlId, 
-        address stakingTokenAddr
-    ) external {
-        require(amount > 0, "Amount must be greater than zero");
-        require(stakingTokenAddr != address(0), "Invalid staking token");
-
-        // Transfer tokens from user to this contract
-        require(IERC20(stakingTokenAddr).transferFrom(msg.sender, address(this), amount), "Transfer failed");
-
-        (uint256 decimals, uint256 ltv, , , , , , , , ) = dataProvider.getReserveConfigurationData(stakingTokenAddr);
+    function recycleUSDC(uint256 amount) private {
+        IERC20(usdc).approve(address(pool), amount);
+        pool.supply(usdc, amount, address(this), 0);
+        (address aToken, ,address variableDebtToken) = dataProvider.getReserveTokensAddresses(usdc);
         
-        uint256 usdcAmount = getUSDCValue(stakingTokenAddr, amount, uint8(decimals));
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
+        emit Supply(usdc, amount, aTokenBalance);
+    }
+
+    function SupplyTokens(
+        address userAddr,
+        uint256 amount, 
+        address supplyTokenAddr
+    ) external
+        returns (uint256)
+    {
+        require(amount > 0, "Amount must be greater than zero");
+        require(supplyTokenAddr != address(0), "Invalid staking token");
+        
+        // Transfer tokens from user to this contract
+        require(IERC20(supplyTokenAddr).transferFrom(userAddr, address(this), amount), "Transfer failed");
+
+        (uint256 decimals, uint256 ltv, , , , , , , , ) = dataProvider.getReserveConfigurationData(supplyTokenAddr);
+        
+        uint256 usdcAmount = getUSDCValue(supplyTokenAddr, amount, uint8(decimals));
         uint256 borrowableAmount = (usdcAmount * ltv) / 10000; // ltv is in basis points (e.g. 7500 for 75%)
 
         // Call the private function to supply the token to Aave (mocked event)
-        supplyERC20(stakingTokenAddr, amount);
+        supplyERC20(supplyTokenAddr, amount);
 
         // Call the private function to borrow USDC from Aave (mocked event)
-        borrowUSDC(borrowableAmount, 1);
+        borrowUSDC(borrowableAmount, 2);
+
+        //Resupply the USDC straight back into aave, and instead track aUSDC token
+        recycleUSDC(borrowableAmount);
+
+        //Returns the amount of aUSDC added in this transaction
+        return borrowableAmount;
+    }
+
+    /// @notice Get the total available aToken balance for a specific asset
+    /// @param asset ERC20 token address
+    /// @return Total available aToken balance
+    function GetTotalAvailableAaveToken(address asset) external view returns (uint256) {
+        (address aToken, ,) = dataProvider.getReserveTokensAddresses(asset);
+        return IERC20(aToken).balanceOf(address(this));
+    }
+
+    function GetTotalAvailableAaveUSDC() external view returns (uint256) {
+        (address aToken, ,) = dataProvider.getReserveTokensAddresses(usdc);
+        return IERC20(aToken).balanceOf(address(this));
     }
 
     /// @notice Withdraw ERC20 token from Aave
     /// @param asset ERC20 token address to withdraw
     /// @param amount Amount to withdraw (type `uint(-1)` for full balance)
-    function withdrawERC20(address asset, uint256 amount) external {
-        pool.withdraw(asset, amount, msg.sender);
+    function withdrawERC20(
+        address userAddr,address asset, uint256 amount) external {
+        pool.withdraw(asset, amount, userAddr);
     }
 
     /// @notice Supply native token (ETH, AVAX, MATIC) using Aave's Gateway
@@ -103,25 +131,28 @@ contract AaveMultiTokenManager {
 
     /// @notice Withdraw native token (ETH, AVAX, MATIC) from Aave back to user
     /// @param amount Amount to withdraw
-    function withdrawNative(uint256 amount) external {
-        wethGateway.withdrawETH(address(pool), amount, msg.sender);
+    function withdrawNative(
+        address userAddr,uint256 amount) external {
+        wethGateway.withdrawETH(address(pool), amount, userAddr);
     }
 
     /// @notice Borrow any ERC20 token from Aave
     /// @param asset Token to borrow
     /// @param amount Amount to borrow
     /// @param interestRateMode 1 = Stable, 2 = Variable
-    function borrowERC20(address asset, uint256 amount, uint256 interestRateMode) external {
+    function borrowERC20(
+        address userAddr,address asset, uint256 amount, uint256 interestRateMode) external {
         pool.borrow(asset, amount, interestRateMode, 0, address(this));
-        IERC20(asset).transfer(msg.sender, amount);
+        IERC20(asset).transfer(userAddr, amount);
     }
 
     /// @notice Repay borrowed ERC20 token
     /// @param asset Token to repay
     /// @param amount Amount to repay
     /// @param interestRateMode 1 = Stable, 2 = Variable
-    function repayERC20(address asset, uint256 amount, uint256 interestRateMode) external {
-        IERC20(asset).transferFrom(msg.sender, address(this), amount);
+    function repayERC20(
+        address userAddr,address asset, uint256 amount, uint256 interestRateMode) external {
+        IERC20(asset).transferFrom(userAddr, address(this), amount);
         IERC20(asset).approve(address(pool), amount);
         pool.repay(asset, amount, interestRateMode, address(this));
     }

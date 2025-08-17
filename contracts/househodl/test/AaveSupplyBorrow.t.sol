@@ -64,15 +64,15 @@ contract AaveSupplyBorrowTest is Test {
         MockERC20 usdc = new MockERC20("USDC", "USDC");
         MockERC20 wbtc = new MockERC20("WrappedBTC", "WBTC");
         MockDataProvider dataProvider = new MockDataProvider();
-        AaveTokenInfo aaveTokenInfo = new AaveTokenInfo(address(dataProvider));
 
+        uint8 decimals = usdc.decimals();
         // Deploy the contract under test
         AaveMultiTokenManager manager = new AaveMultiTokenManager(
             address(pool),
             address(gateway),
             address(oracle),
             address(usdc),
-            address(aaveTokenInfo)
+            address(dataProvider)
         );
 
         // Create a user and mint 0.1 WBTC (8 decimals for WBTC)
@@ -83,7 +83,7 @@ contract AaveSupplyBorrowTest is Test {
         // Prank as user for approval and staking
         vm.startPrank(user);
         wbtc.approve(address(manager), wbtcAmount);
-        manager.Stake(0.05e8, 0x123456789abc000000000000, address(wbtc));
+        manager.SupplyTokens(user,0.05e8, address(wbtc));
         vm.stopPrank();
     }
 }
