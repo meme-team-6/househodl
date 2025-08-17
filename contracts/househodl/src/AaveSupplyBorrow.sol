@@ -66,8 +66,6 @@ contract AaveMultiTokenManager {
         // emit Supply(asset, amount, aTokenBalance);
     }
 
-    
-
     function Stake(
         uint256 amount, 
         // bytes12 hodlId, 
@@ -79,15 +77,16 @@ contract AaveMultiTokenManager {
         // Transfer tokens from user to this contract
         require(IERC20(stakingTokenAddr).transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
-        (uint256 decimals, , , , , , , , , ) = dataProvider.getReserveConfigurationData(stakingTokenAddr);
+        (uint256 decimals, uint256 ltv, , , , , , , , ) = dataProvider.getReserveConfigurationData(stakingTokenAddr);
         
-        uint256 UsdcAmount = getUSDCValue(stakingTokenAddr, amount, uint8(decimals));
+        uint256 usdcAmount = getUSDCValue(stakingTokenAddr, amount, uint8(decimals));
+        uint256 borrowableAmount = (usdcAmount * ltv) / 10000; // ltv is in basis points (e.g. 7500 for 75%)
 
         // Call the private function to supply the token to Aave (mocked event)
         supplyERC20(stakingTokenAddr, amount);
 
         // Call the private function to borrow USDC from Aave (mocked event)
-        borrowUSDC(UsdcAmount, 1);
+        borrowUSDC(borrowableAmount, 1);
     }
 
     /// @notice Withdraw ERC20 token from Aave
