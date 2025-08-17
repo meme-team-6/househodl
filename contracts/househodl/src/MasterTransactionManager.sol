@@ -211,6 +211,12 @@ contract MasterTransactionManager is OApp {
         // and send them to other chains for processing
 
         for (uint256 i = 0; i < expiredIds.length; i++) {
+            StorageUnit.PendingTransaction memory pendingTx = storageUnit.getPendingTransaction(expiredIds[i]);
+            // Here you would create instructions based on the pending transaction
+            // For now, we just remove them
+        }
+
+        for (uint256 i = 0; i < expiredIds.length; i++) {
             storageUnit.removePendingTransaction(expiredIds[i]);
         }
 

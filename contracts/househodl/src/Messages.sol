@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Transaction, TransactionInstruction, Share} from "./Common.sol";
+import {Transaction, Share, Proportion} from "./Common.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
@@ -58,7 +58,8 @@ struct SubmitTransaction {
 
 struct ReconcileTransaction {
     bytes12 hodlId;
-    TransactionInstruction[] transactionInstructions;
+    Proportion[] proportion;
+    uint256 totalUsdcAmount;
 }
 
 library MessageEncoder {
@@ -100,7 +101,7 @@ library MessageEncoder {
         return abi.decode(packet, (MessageType));
     }
 
-    function asReconcileTranscation(
+    function asReconcileTransaction(
         bytes memory packet
     ) public pure returns (ReconcileTransaction memory sentMsg) {
         MessageType _type;
