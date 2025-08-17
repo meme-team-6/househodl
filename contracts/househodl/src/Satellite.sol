@@ -68,7 +68,7 @@ contract Satellite is OApp, OAppOptionsType3 {
      */
     function quotePacket(
         uint32 _dstEid,
-        bytes calldata _packet,
+        bytes memory _packet,
         bytes calldata _options,
         bool _payInLzToken
     ) public view returns (MessagingFee memory fee) {
@@ -93,14 +93,14 @@ contract Satellite is OApp, OAppOptionsType3 {
     /// @param _options  Execution options for gas on the destination (bytes)
     function sendCreateHodl(
         uint32 _dstEid,
-        CreateHodl _string,
+        CreateHodl memory _string,
         bytes calldata _options
     ) external payable {
         bytes memory _message = MessageEncoder.encodeCreateHodl(_string);
 
         MessagingFee memory fee = quotePacket(
             _dstEid,
-            abi.encode(_string),
+            _message,
             _options,
             false
         );
@@ -109,7 +109,7 @@ contract Satellite is OApp, OAppOptionsType3 {
             _dstEid,
             _message,
             combineOptions(_dstEid, SEND, _options),
-            MessagingFee(address(this).balance, 0),
+            fee,
             payable(address(this))
         );
     }
