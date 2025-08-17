@@ -9,8 +9,9 @@ import { TransactionProcessor } from "./TransactionProcessor.sol";
 
 contract MasterTransactionManager is OApp {
     StorageUnit public storageUnit;
-    
     uint16 internal constant SEND = 1;
+    /** A mapping of the chainId to the endpoint ID */
+    mapping(uint => uint32) public contractEid;
     
     error InvalidStorageUnit();
 
@@ -47,11 +48,23 @@ contract MasterTransactionManager is OApp {
     }
 
 
-    constructor(address _endpoint, address _owner, address _storageUnit)
+    struct ContractAddresses {
+        address contractAddress;
+        uint chainId;
+        uint32 eid;
+    }
+
+
+    constructor(address _endpoint, address _owner, address _storageUnit, ContractAddresses[] memory _contracts)
         OApp(_endpoint, _owner)
     {
         if (_storageUnit == address(0)) revert InvalidStorageUnit();
         storageUnit = StorageUnit(_storageUnit);
+
+        for (uint256 i = 0; i < _contracts.length; i++) {
+            contractEid[_contracts[i].chainId] = _contracts[i].eid;
+            _setPeer(_contracts[i].eid, _contracts[i].contractAddress);
+        }
     }
 
     function createHodl(CreateHodl memory params) public returns (HodlCreated memory) {

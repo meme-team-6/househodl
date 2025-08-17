@@ -20,42 +20,15 @@ contract Satellite is OApp, OAppOptionsType3 {
     constructor(
         address _endpoint,
         address _owner,
-        uint32 _mtmEid
+        uint32 _mtmEid,
+        bytes32 _mtmAddr
     ) OApp(_endpoint, _owner) {
         if (_owner != _msgSender()) {
             _transferOwnership(_owner);
         }
 
         mtmEid = _mtmEid;
-    }
-
-    /**
-     * Set the Master Transaction Manger's contract ID so that we can invoke it.
-     * @param _mtmEid The Endpoint ID of the chain that the MasterTransactionManeger contract is depolyed on
-     * @param addr The address of the MasterTransactionManager contract as bytes32, used for forign chains
-     */
-    function _setMtmEidB32(uint32 _mtmEid, bytes32 addr) internal {
-        _setPeer(mtmEid, bytes32(0));
-        _setPeer(_mtmEid, addr);
-        mtmEid = _mtmEid;
-    }
-
-    /**
-     * Set the Master Transaction Manger's contract ID so that we can invoke it.
-     * @param _mtmEid The Endpoint ID of the chain that the MasterTransactionManeger contract is depolyed on
-     * @param addr The address of the MasterTransactionManager contract as bytes32, used for forign chains
-     */
-    function setMtmEidB32(uint32 _mtmEid, bytes32 addr) external onlyOwner {
-        _setMtmEidB32(_mtmEid, addr);
-    }
-
-    /**
-     * Set the Master Transaction Manger's contract ID so that we can invoke it.
-     * @param _mtmEid The Endpoint ID of the chain that the MasterTransactionManeger contract is depolyed on
-     * @param addr The address of the MasterTransactionManager contract as bytes32, used for forign chains
-     */
-    function setMtmEid(uint32 _mtmEid, address addr) external onlyOwner {
-        _setMtmEidB32(_mtmEid, bytes32(uint256(uint160(addr))));
+        _setPeer(mtmEid, _mtmAddr);
     }
 
     /**
@@ -128,11 +101,5 @@ contract Satellite is OApp, OAppOptionsType3 {
         bytes calldata /*_extraData*/
     ) internal override {
         MessageType msgType = MessageEncoder.determineType(_message);
-
-        // if (msgType == MessageType.STRING) {
-        // (string memory left, string memory right) = MessageEncoder.;
-        // emit MessageReceived(left, right);
-        // }
-        // Add more cases as needed
     }
 }
