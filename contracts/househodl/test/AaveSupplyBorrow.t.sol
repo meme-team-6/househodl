@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 import "../src/AaveSupplyBorrow.sol";
+import "../src/AaveTokenInfo.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 contract MockPool {

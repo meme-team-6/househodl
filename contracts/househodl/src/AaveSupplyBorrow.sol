@@ -68,7 +68,7 @@ contract AaveMultiTokenManager {
 
     function Stake(
         uint256 amount, 
-        // bytes12 hodlId, 
+        bytes12 hodlId, 
         address stakingTokenAddr
     ) external {
         require(amount > 0, "Amount must be greater than zero");

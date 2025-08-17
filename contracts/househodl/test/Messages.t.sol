@@ -12,7 +12,9 @@ contract MessageTest is Test {
     function testEncoding() public pure {
         CreateHodl memory createHodl = CreateHodl({
             initialUser: address(0x123),
-            initialUserChainId: 456
+            initialUserChainId: 456,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
 
         bytes memory encoded = MessageEncoder.encodeCreateHodl(createHodl);

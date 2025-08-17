@@ -13,6 +13,19 @@ contract MasterTransactionManager is OApp {
     /** A mapping of the chainId to the endpoint ID */
     mapping(uint => uint32) public contractEid;
     
+    // Deployment tracking
+    struct DeploymentInfo {
+        uint256 deploymentBlock;
+        uint256 deploymentTimestamp;
+        address deployer;
+        uint256 chainId;
+        string version;
+        address layerZeroEndpoint;
+        address storageUnitAddress;
+    }
+    
+    DeploymentInfo public deploymentInfo;
+    
     error InvalidStorageUnit();
 
     event TransactionSubmitted(
@@ -70,7 +83,7 @@ contract MasterTransactionManager is OApp {
 
         bytes12 newHodlId = bytes12(uint96(hodlCount));
 
-        storageUnit.createHodl(newHodlId, params.initialUser, params.initialUserChainId);
+        storageUnit.createHodl(newHodlId, params.initialUser, params.initialUserChainId, params.vanityName, params.spendLimit);
 
         return HodlCreated({
             hodlId: newHodlId
@@ -277,6 +290,30 @@ contract MasterTransactionManager is OApp {
         }
         
         return userHodls;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Deployment Info Functions
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function getDeploymentInfo() external view returns (
+        uint256 deploymentBlock,
+        uint256 deploymentTimestamp,
+        address deployer,
+        uint256 chainId,
+        string memory version,
+        address layerZeroEndpoint,
+        address storageUnitAddress
+    ) {
+        return (
+            deploymentInfo.deploymentBlock,
+            deploymentInfo.deploymentTimestamp,
+            deploymentInfo.deployer,
+            deploymentInfo.chainId,
+            deploymentInfo.version,
+            deploymentInfo.layerZeroEndpoint,
+            deploymentInfo.storageUnitAddress
+        );
     }
 
 

@@ -73,7 +73,9 @@ contract MasterTransactionManagerFixedTest is Test {
     function testCreateHodl_Success() public {
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
 
         vm.prank(user1);
@@ -92,7 +94,9 @@ contract MasterTransactionManagerFixedTest is Test {
     function testCreateHodl_RevertWithZeroAddress() public {
         CreateHodl memory params = CreateHodl({
             initialUser: address(0),
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
 
         vm.expectRevert("Initial user cannot be zero address");
@@ -104,7 +108,10 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create first hodl
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
+
         });
         vm.prank(user1);
         HodlCreated memory result1 = manager.createHodl(params1);
@@ -112,7 +119,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create second hodl
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserChainId: USER2_CHAIN_ID
+            initialUserChainId: USER2_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user2);
         HodlCreated memory result2 = manager.createHodl(params2);
@@ -130,7 +139,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl first
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -157,7 +168,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -194,7 +207,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -215,7 +230,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -242,7 +259,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create a hodl
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         manager.createHodl(params);
@@ -254,7 +273,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -285,7 +306,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory result = manager.createHodl(params);
@@ -302,7 +325,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create first hodl with user1
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created1 = manager.createHodl(params1);
@@ -310,7 +335,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create second hodl with user2
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserChainId: USER2_CHAIN_ID
+            initialUserChainId: USER2_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user2);
         manager.createHodl(params2);
@@ -329,7 +356,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create first hodl with user1
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created1 = manager.createHodl(params1);
@@ -337,7 +366,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create second hodl with user2
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserChainId: USER2_CHAIN_ID
+            initialUserChainId: USER2_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user2);
         HodlCreated memory created2 = manager.createHodl(params2);
@@ -377,21 +408,27 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create multiple hodls
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created1 = manager.createHodl(params1);
 
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserChainId: USER2_CHAIN_ID
+            initialUserChainId: USER2_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user2);
         manager.createHodl(params2);
 
         CreateHodl memory params3 = CreateHodl({
             initialUser: user3,
-            initialUserChainId: USER3_CHAIN_ID
+            initialUserChainId: USER3_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user3);
         manager.createHodl(params3);
@@ -432,7 +469,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // For now, just test that the limit exists
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         
         // This should succeed for a normal number
@@ -447,7 +486,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Hodl 1: user1 creates, adds user2
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created1 = manager.createHodl(params1);
@@ -464,7 +505,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Hodl 2: user3 creates, adds user1 and user4
         CreateHodl memory params2 = CreateHodl({
             initialUser: user3,
-            initialUserChainId: USER3_CHAIN_ID
+            initialUserChainId: USER3_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user3);
         HodlCreated memory created2 = manager.createHodl(params2);
@@ -523,7 +566,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl and add users
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -567,7 +612,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -602,7 +649,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -642,7 +691,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl and submit transaction
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -682,7 +733,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -729,7 +782,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -757,7 +812,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -774,7 +831,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -802,7 +861,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -819,7 +880,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);
@@ -850,7 +913,9 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl and add another user
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserChainId: USER1_CHAIN_ID
+            initialUserChainId: USER1_CHAIN_ID,
+            vanityName: bytes32(""),
+            spendLimit: 0
         });
         vm.prank(user1);
         HodlCreated memory created = manager.createHodl(createParams);

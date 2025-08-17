@@ -16,6 +16,8 @@ enum MessageType {
 struct CreateHodl {
     address initialUser;
     uint32 initialUserChainId;
+    bytes32 vanityName;
+    uint256 spendLimit; 
 }
 
 struct HodlCreated {

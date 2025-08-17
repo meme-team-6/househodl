@@ -52,11 +52,11 @@ contract StorageUnit is Ownable {
         return hodlGroups.length;
     }
 
-    function createHodl(bytes12 id, address initialUser, uint32 initialUserChainId) external onlyTransactionManager {
+    function createHodl(bytes12 id, address initialUser, uint32 initialUserChainId, bytes32 vanityName, uint256 spendLimit) external onlyTransactionManager {
         StoredHodlGroup memory newStoredHodl = StoredHodlGroup({
             id: id,
-            vanityName: bytes32(0),
-            spendLimit: 0
+            vanityName: vanityName,
+            spendLimit: spendLimit
         });
         hodlGroups.push(newStoredHodl);
 
