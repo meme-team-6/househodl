@@ -374,7 +374,7 @@ const GroupManagement = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{hodl?.pendingExpenses}</p>
+                  <p className="text-2xl font-bold">${hodl?.pendingExpenses}</p>
                 </CardContent>
               </Card>
             </div>

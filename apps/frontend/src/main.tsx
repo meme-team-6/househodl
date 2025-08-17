@@ -7,7 +7,6 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import Landing from "./Landing";
-import App from "./App";
 import AppWithGroups from "./AppWithGroups";
 import GroupCreate from "./GroupCreate";
 import GroupManagement from "./GroupManagement";
@@ -73,9 +72,9 @@ const router = createBrowserRouter([
   {
     path: "/group/create",
     element: (
-      <PrivateRoute>
+      // <PrivateRoute>
         <GroupCreate />
-      </PrivateRoute>
+      // </PrivateRoute>
     ),
   },
   {
@@ -112,20 +111,12 @@ const router = createBrowserRouter([
   },
 ]);
 
-const rpcUrlOverrides = {
-  "1": ["https://ethereum-sepolia.rpc.subquery.network/public"],
-}
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <DynamicContextProvider
       settings={{
         environmentId: "a45df874-672d-4433-a4e1-fbdd691303ab",
         walletConnectors: [EthereumWalletConnectors],
-        overrides: {
-          evmNetworks: (networks) =>
-            overrideNetworkRpcUrl(networks, rpcUrlOverrides),
-        },
       }}
     >
       <DynamicUserProfile />

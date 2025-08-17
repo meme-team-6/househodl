@@ -1,5 +1,7 @@
+export const ensReverseChainId = 11155111; // sepolia
+export const masterTransactionManagerChainId = 11155111; // sepolia
 export const masterTransactionManagerAddress =
-  "0xD76492C99F799E8a48e59C062a1d2C041d22ECD4";
+  "0x7ede73c6653C8D41a3890cdeB93f97A5a5e0b5Eb";
 export const masterTransactionManagerAbi = [
   {
     inputs: [
@@ -42,6 +44,68 @@ export const masterTransactionManagerAbi = [
     inputs: [
       {
         indexed: true,
+        internalType: "bytes12",
+        name: "hodlId",
+        type: "bytes12",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "updatedBy",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "oldLimit",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newLimit",
+        type: "uint256",
+      },
+    ],
+    name: "HodlSpendLimitUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes12",
+        name: "hodlId",
+        type: "bytes12",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "updatedBy",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "oldName",
+        type: "bytes32",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "newName",
+        type: "bytes32",
+      },
+    ],
+    name: "HodlVanityNameUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "previousOwner",
         type: "address",
@@ -71,13 +135,69 @@ export const masterTransactionManagerAbi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "transactionId",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "bytes12",
+        name: "hodlId",
+        type: "bytes12",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "submittingUser",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amountUsd",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint32",
+        name: "userEid",
+        type: "uint32",
+      },
+    ],
+    name: "TransactionSubmitted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bytes32[]",
+        name: "transactionIds",
+        type: "bytes32[]",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "processedCount",
+        type: "uint256",
+      },
+    ],
+    name: "TransactionsProcessed",
+    type: "event",
+  },
+  {
     inputs: [
       {
         components: [
           { internalType: "address", name: "newUser", type: "address" },
           { internalType: "address", name: "invitingUser", type: "address" },
           { internalType: "bytes12", name: "hodlId", type: "bytes12" },
-          { internalType: "address", name: "chainEndpointId", type: "address" },
+          { internalType: "uint32", name: "newUserChainId", type: "uint32" },
         ],
         internalType: "struct AddUserToHodl",
         name: "params",
@@ -108,15 +228,24 @@ export const masterTransactionManagerAbi = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "contractEid",
+    outputs: [{ internalType: "uint32", name: "", type: "uint32" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         components: [
           { internalType: "address", name: "initialUser", type: "address" },
           {
-            internalType: "address",
+            internalType: "uint32",
             name: "initialUserChainId",
-            type: "address",
+            type: "uint32",
           },
+          { internalType: "bytes32", name: "vanityName", type: "bytes32" },
+          { internalType: "uint256", name: "spendLimit", type: "uint256" },
         ],
         internalType: "struct CreateHodl",
         name: "params",
@@ -127,7 +256,7 @@ export const masterTransactionManagerAbi = [
     outputs: [
       {
         components: [
-          { internalType: "bytes12", name: "hodleId", type: "bytes12" },
+          { internalType: "bytes12", name: "hodlId", type: "bytes12" },
         ],
         internalType: "struct HodlCreated",
         name: "",
@@ -135,6 +264,21 @@ export const masterTransactionManagerAbi = [
       },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "deploymentInfo",
+    outputs: [
+      { internalType: "uint256", name: "deploymentBlock", type: "uint256" },
+      { internalType: "uint256", name: "deploymentTimestamp", type: "uint256" },
+      { internalType: "address", name: "deployer", type: "address" },
+      { internalType: "uint256", name: "chainId", type: "uint256" },
+      { internalType: "string", name: "version", type: "string" },
+      { internalType: "address", name: "layerZeroEndpoint", type: "address" },
+      { internalType: "address", name: "storageUnitAddress", type: "address" },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -152,6 +296,30 @@ export const masterTransactionManagerAbi = [
   },
   {
     inputs: [],
+    name: "findAndProcessExpiredTransactions",
+    outputs: [
+      { internalType: "uint256", name: "processedCount", type: "uint256" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getDeploymentInfo",
+    outputs: [
+      { internalType: "uint256", name: "deploymentBlock", type: "uint256" },
+      { internalType: "uint256", name: "deploymentTimestamp", type: "uint256" },
+      { internalType: "address", name: "deployer", type: "address" },
+      { internalType: "uint256", name: "chainId", type: "uint256" },
+      { internalType: "string", name: "version", type: "string" },
+      { internalType: "address", name: "layerZeroEndpoint", type: "address" },
+      { internalType: "address", name: "storageUnitAddress", type: "address" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getHodlCount",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
@@ -159,25 +327,98 @@ export const masterTransactionManagerAbi = [
   },
   {
     inputs: [{ internalType: "bytes12", name: "hodlId", type: "bytes12" }],
-    name: "getHodlUsers",
-    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    name: "getHodlGroup",
+    outputs: [
+      {
+        components: [
+          { internalType: "bytes12", name: "id", type: "bytes12" },
+          {
+            components: [
+              { internalType: "address", name: "userAddress", type: "address" },
+              { internalType: "uint32", name: "chainId", type: "uint32" },
+              {
+                internalType: "uint256",
+                name: "trackedBalUsd",
+                type: "uint256",
+              },
+              { internalType: "uint256", name: "realDebtUsd", type: "uint256" },
+              { internalType: "uint256", name: "heldUsd", type: "uint256" },
+            ],
+            internalType: "struct User[]",
+            name: "users",
+            type: "tuple[]",
+          },
+          { internalType: "bytes32", name: "vanityName", type: "bytes32" },
+          { internalType: "uint256", name: "spendLimit", type: "uint256" },
+        ],
+        internalType: "struct HodlGroup",
+        name: "",
+        type: "tuple",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "bytes12", name: "hodlId", type: "bytes12" }],
-    name: "getHodlUsersWithEid",
+    name: "getHodlUsers",
     outputs: [
       {
         components: [
-          { internalType: "address", name: "user", type: "address" },
-          { internalType: "address", name: "eid", type: "address" },
+          { internalType: "address", name: "userAddress", type: "address" },
+          { internalType: "uint32", name: "chainId", type: "uint32" },
+          { internalType: "uint256", name: "trackedBalUsd", type: "uint256" },
+          { internalType: "uint256", name: "realDebtUsd", type: "uint256" },
+          { internalType: "uint256", name: "heldUsd", type: "uint256" },
         ],
-        internalType: "struct MasterTransactionManager.UserWithEid[]",
+        internalType: "struct User[]",
         name: "",
         type: "tuple[]",
       },
     ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "bytes12", name: "hodlId", type: "bytes12" }],
+    name: "getHodlUsersAddresses",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "bytes32", name: "transactionId", type: "bytes32" },
+    ],
+    name: "getPendingTransaction",
+    outputs: [
+      {
+        components: [
+          { internalType: "bytes32", name: "id", type: "bytes32" },
+          { internalType: "bytes12", name: "hodlId", type: "bytes12" },
+          { internalType: "uint256", name: "amountUsd", type: "uint256" },
+          { internalType: "address", name: "originatingUser", type: "address" },
+          {
+            internalType: "uint48",
+            name: "transactionCreatedAt",
+            type: "uint48",
+          },
+          { internalType: "address", name: "submittingUser", type: "address" },
+          { internalType: "uint32", name: "userChainId", type: "uint32" },
+          { internalType: "uint48", name: "submittedAt", type: "uint48" },
+        ],
+        internalType: "struct StorageUnit.PendingTransaction",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getPendingTransactionCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
@@ -209,6 +450,33 @@ export const masterTransactionManagerAbi = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "bytes12", name: "hodlId", type: "bytes12" }],
+    name: "listPendingTransactions",
+    outputs: [
+      {
+        components: [
+          { internalType: "bytes32", name: "id", type: "bytes32" },
+          { internalType: "bytes12", name: "hodlId", type: "bytes12" },
+          { internalType: "uint256", name: "amountUsd", type: "uint256" },
+          { internalType: "address", name: "originatingUser", type: "address" },
+          {
+            internalType: "uint48",
+            name: "transactionCreatedAt",
+            type: "uint48",
+          },
+          { internalType: "address", name: "submittingUser", type: "address" },
+          { internalType: "uint32", name: "userChainId", type: "uint32" },
+          { internalType: "uint48", name: "submittedAt", type: "uint48" },
+        ],
+        internalType: "struct StorageUnit.PendingTransaction[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         components: [
@@ -228,13 +496,6 @@ export const masterTransactionManagerAbi = [
     name: "lzReceive",
     outputs: [],
     stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "mapUserToEid",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -272,28 +533,6 @@ export const masterTransactionManagerAbi = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "uint32", name: "_dstEid", type: "uint32" },
-      { internalType: "string", name: "_string", type: "string" },
-      { internalType: "bytes", name: "_options", type: "bytes" },
-      { internalType: "bool", name: "_payInLzToken", type: "bool" },
-    ],
-    name: "quoteSendString",
-    outputs: [
-      {
-        components: [
-          { internalType: "uint256", name: "nativeFee", type: "uint256" },
-          { internalType: "uint256", name: "lzTokenFee", type: "uint256" },
-        ],
-        internalType: "struct MessagingFee",
-        name: "fee",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "renounceOwnership",
     outputs: [],
@@ -301,19 +540,28 @@ export const masterTransactionManagerAbi = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "uint32", name: "_dstEid", type: "uint32" },
-      { internalType: "string", name: "_string", type: "string" },
-      { internalType: "bytes", name: "_options", type: "bytes" },
-    ],
-    name: "sendString",
+    inputs: [{ internalType: "address", name: "_delegate", type: "address" }],
+    name: "setDelegate",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "_delegate", type: "address" }],
-    name: "setDelegate",
+    inputs: [
+      { internalType: "bytes12", name: "hodlId", type: "bytes12" },
+      { internalType: "uint256", name: "spendLimit", type: "uint256" },
+    ],
+    name: "setHodlSpendLimit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "bytes12", name: "hodlId", type: "bytes12" },
+      { internalType: "bytes32", name: "vanityName", type: "bytes32" },
+    ],
+    name: "setHodlVanityName",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -329,12 +577,78 @@ export const masterTransactionManagerAbi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        components: [
+          { internalType: "address", name: "contractAddress", type: "address" },
+          { internalType: "uint256", name: "chainId", type: "uint256" },
+          { internalType: "uint32", name: "eid", type: "uint32" },
+        ],
+        internalType: "struct MasterTransactionManager.ContractAddresses[]",
+        name: "_contracts",
+        type: "tuple[]",
+      },
+    ],
+    name: "setSatellite",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "storageUnit",
     outputs: [
       { internalType: "contract StorageUnit", name: "", type: "address" },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: "bytes12", name: "hodlId", type: "bytes12" },
+          {
+            components: [
+              { internalType: "uint256", name: "amountUsd", type: "uint256" },
+              {
+                components: [
+                  {
+                    internalType: "address",
+                    name: "userAddress",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "percentageInBasisPoints",
+                    type: "uint256",
+                  },
+                ],
+                internalType: "struct Share[]",
+                name: "shares",
+                type: "tuple[]",
+              },
+              {
+                internalType: "address",
+                name: "originatingUser",
+                type: "address",
+              },
+              { internalType: "uint48", name: "createdAt", type: "uint48" },
+            ],
+            internalType: "struct Transaction",
+            name: "transaction",
+            type: "tuple",
+          },
+          { internalType: "uint32", name: "userChainId", type: "uint32" },
+        ],
+        internalType: "struct SubmitTransaction",
+        name: "params",
+        type: "tuple",
+      },
+    ],
+    name: "submitTransaction",
+    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

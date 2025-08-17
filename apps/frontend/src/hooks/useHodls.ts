@@ -1,4 +1,8 @@
-import { masterTransactionManagerAbi, masterTransactionManagerAddress } from "@/abis/MasterTransactionManager";
+import {
+  masterTransactionManagerAbi,
+  masterTransactionManagerAddress,
+  masterTransactionManagerChainId,
+} from "@/abis/MasterTransactionManager";
 import { evmProvidersSelector } from "@dynamic-labs/ethereum-core";
 import { useRpcProviders } from "@dynamic-labs/sdk-react-core";
 import { useEffect, useState } from "react";
@@ -13,11 +17,10 @@ export const useHodls = () => {
 
   useEffect(() => {
     if (!wallet) return;
-    console.log({ wallet });
-    console.log("Calling RPC");
     setIsLoading(true);
-    rpcProvider.defaultProvider?.provider
-      .readContract({
+    rpcProvider
+      .getProviderByChainId(masterTransactionManagerChainId)
+      ?.provider.readContract({
         address: masterTransactionManagerAddress,
         abi: masterTransactionManagerAbi,
         functionName: "getUserHodls",
