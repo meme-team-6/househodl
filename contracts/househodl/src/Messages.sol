@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Transaction, TransactionInstruction} from "./Common.sol";
+import {Transaction, TransactionInstruction, Share} from "./Common.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
@@ -49,8 +49,11 @@ struct AddUserToHodl {
 
 struct SubmitTransaction {
     bytes12 hodlId;
-    Transaction transaction;
     uint32 userChainId;
+
+    uint256 amountUsd;
+    Share[] shares;
+    bytes32 vanityName;
 }
 
 struct ReconcileTransaction {
