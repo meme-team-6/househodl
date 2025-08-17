@@ -1,10 +1,12 @@
 import { Link } from "react-router";
 import { AvatarCircles } from "./components/magicui/avatar-circles";
 import { useHodl } from "./hooks/useHodl";
+import { useHodlPendingTransactions } from "./hooks/useHodlPendingTransactions";
+import { useMemo } from "react";
 const defaultAvatars = [
   {
-    imageUrl: "https://avatars.githubusercontent.com/u/16860528",
-    profileUrl: "https://github.com/dillionverma",
+    imageUrl: "https://avatars.githubusercontent.com/u/23006558",
+    profileUrl: "https://github.com/RussellBloxwich",
   },
   {
     imageUrl: "https://avatars.githubusercontent.com/u/20110627",
@@ -29,6 +31,14 @@ const defaultAvatars = [
 ];
 export const Hodl = ({ hodlId }: { hodlId: string }) => {
   const { hodl } = useHodl(hodlId);
+  const { transactions } = useHodlPendingTransactions(hodlId);
+
+  const pendingExpenses = useMemo(() => {
+    return transactions.reduce(
+      (acc, transaction) => acc + (transaction?.amountUsd || 0),
+      0
+    );
+  }, [transactions]);
 
   return (
     <Link
@@ -41,8 +51,8 @@ export const Hodl = ({ hodlId }: { hodlId: string }) => {
           {hodl?.name}
         </h2>
         <p className="text-sm text-muted-foreground">
-          ${hodl?.spendLimit.toLocaleString()} available &nbsp;·&nbsp;{" "}
-          ${hodl?.pendingExpenses} pending expenses
+          ${((hodl?.spendLimit || 0) - pendingExpenses).toLocaleString()}{" "}
+          available &nbsp;·&nbsp; ${pendingExpenses} pending expenses
         </p>
       </div>
       <p></p>
