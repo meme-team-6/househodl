@@ -195,7 +195,10 @@ contract Satellite is OApp, OAppOptionsType3 {
             TokenOwnership storage ownership = tokenOwnershipsPerUserHodl[userHodlKey];
 
             // If user doesn't exist, initialize
-            require(ownership.owner != address(0), "User has not staked before!");
+            if(ownership.owner == address(0))
+            {
+                continue;
+            }
 
             // Get total shares for this token
             int256 totalShares = int256(totalSharesAssignedPerToken[proportions[i].tokenAddr]);
