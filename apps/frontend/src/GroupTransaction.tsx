@@ -13,7 +13,7 @@ import { useHodl } from "./hooks/useHodl";
 import { VotingStatus } from "./VotingStatus";
 import { useMemo, useEffect } from "react";
 import { usePendingTransaction } from "./hooks/useTransaction";
-import { useReverseEns } from "./hooks/useENS";
+import { useReverseEns } from "./hooks/useEns";
 
 // Extend Window interface to include our custom property
 declare global {
@@ -49,7 +49,7 @@ function GroupTransaction() {
   }>();
 
   const { isLoading: isHodlLoading, hodl } = useHodl(id || "");
-  const { isLoading: isTxLoading, transaction } = usePendingTransaction({
+  const { loading: isTxLoading, transaction } = usePendingTransaction({
     transactionId: transactionId || "",
   });
 
