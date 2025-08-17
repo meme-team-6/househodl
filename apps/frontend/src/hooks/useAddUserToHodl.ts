@@ -42,7 +42,7 @@ export const useAddUserToHodl = (hodlId: string) => {
         setIsLoading(false);
       }
     },
-    [hodlId, wallet]
+    [hodlId, switchNetwork, wallet]
   );
 
   return { isLoading, addUserToHodl };
