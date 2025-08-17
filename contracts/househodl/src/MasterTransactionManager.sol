@@ -62,6 +62,7 @@ contract MasterTransactionManager is OApp {
         uint256 hodlCount = storageUnit.getHodlCount();
         require(hodlCount < (2**12 - 1), "Hodl pool full"); // Ensure we don't overflow the bytes12 ID
         require(params.initialUser != address(0), "Initial user cannot be zero address");
+        require(params.initialUser == msg.sender, "Initial user must be the sender");
 
         bytes12 newHodlId = bytes12(uint96(hodlCount));
 
