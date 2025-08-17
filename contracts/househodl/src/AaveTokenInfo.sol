@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IPoolDataProvider} from "@aave-v3-core/contracts/interfaces/IPoolDataProvider.sol";
+import {AaveProtocolDataProvider} from "@aave-v3-origin/contracts/helpers/AaveProtocolDataProvider.sol";
 
 contract AaveTokenInfo {
-    IPoolDataProvider public immutable dataProvider;
+    AaveProtocolDataProvider public immutable dataProvider;
 
     constructor(address _dataProvider) {
-        dataProvider = IPoolDataProvider(_dataProvider);
+        dataProvider = AaveProtocolDataProvider(_dataProvider);
     }
 
     /// @notice Returns the aToken and debt token addresses for a given asset

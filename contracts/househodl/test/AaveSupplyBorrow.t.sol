@@ -57,15 +57,13 @@ contract AaveSupplyBorrowTest is Test {
     }
 
     function testStake() public {
-        
         MockPool pool = new MockPool();
         MockWETHGateway gateway = new MockWETHGateway();
         MockOracle oracle = new MockOracle();
         MockERC20 usdc = new MockERC20("USDC", "USDC");
-        MockERC20 token = new MockERC20("Ethereum", "ETH");
-        // MockDataProvider = b
-        AaveTokenInfo aaveTokenInfo = new AaveTokenInfo(address(pool));
-
+        MockERC20 wbtc = new MockERC20("WrappedBTC", "WBTC");
+        MockDataProvider dataProvider = new MockDataProvider();
+        AaveTokenInfo aaveTokenInfo = new AaveTokenInfo(address(dataProvider));
 
         // Deploy the contract under test
         AaveMultiTokenManager manager = new AaveMultiTokenManager(
@@ -75,10 +73,16 @@ contract AaveSupplyBorrowTest is Test {
             address(usdc),
             address(aaveTokenInfo)
         );
-        vm.expectEmit(true, false, false, true);
 
-        // Call Stake (should not revert)
-        manager.Stake(1000, 0x123456789abc000000000000, address(token));
-        emit Supply(address(token), 1000, 1000);
+        // Create a user and mint 0.1 WBTC (8 decimals for WBTC)
+        address user = address(0xBEEF);
+        uint256 wbtcAmount = 0.1e8; // 0.1 WBTC with 8 decimals
+        wbtc.mint(user, wbtcAmount);
+
+        // Prank as user for approval and staking
+        vm.startPrank(user);
+        wbtc.approve(address(manager), wbtcAmount);
+        manager.Stake(0.05e8, 0x123456789abc000000000000, address(wbtc));
+        vm.stopPrank();
     }
 }

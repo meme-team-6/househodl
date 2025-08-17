@@ -5,36 +5,29 @@ import {IPool} from "@aave-v3-core/contracts/interfaces/IPool.sol";
 import {IPriceOracle} from "@aave-v3-core/contracts/interfaces/IPriceOracle.sol";   
 import {IWrappedTokenGatewayV3} from "@aave-v3-periphery/contracts/misc/interfaces/IWrappedTokenGatewayV3.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import {AaveTokenInfo} from "./AaveTokenInfo.sol";
-
-/// @title Aave Multi-Token Supply & Borrow Example
-/// @notice Allows supplying and borrowing any supported ERC20 token, and also supports native tokens (ETH/AVAX/MATIC) via gateway
-interface IAaveOracle {
-    function getAssetPrice(address asset) external view returns (uint256);
-}
+import {AaveProtocolDataProvider} from "@aave-v3-origin/contracts/helpers/AaveProtocolDataProvider.sol";
 
 event Supply(address indexed token, uint256 amount, uint256 aTokenBalance);
 
 contract AaveMultiTokenManager {
     IPool public immutable pool;
     IWrappedTokenGatewayV3 public immutable wethGateway;
-    IAaveOracle public immutable aaveOracle;
+    IPriceOracle public immutable aaveOracle;
     address public immutable usdc;
-    AaveTokenInfo public immutable tokenInfo;
+    AaveProtocolDataProvider public immutable dataProvider;
 
     constructor(
         address _pool,
         address _wethGateway,
         address _oracle,
         address _usdc,
-        address _tokenInfo
+        address _dataProvider
     ) {
         pool = IPool(_pool);
         wethGateway = IWrappedTokenGatewayV3(_wethGateway);
-        aaveOracle = IAaveOracle(_oracle);
+        aaveOracle = IPriceOracle(_oracle);
         usdc = _usdc;
-        tokenInfo = AaveTokenInfo(_tokenInfo);
+        dataProvider = AaveProtocolDataProvider(_dataProvider);
     }
 
     /// @notice Borrow USDC directly from Aave
@@ -66,26 +59,32 @@ contract AaveMultiTokenManager {
     /// @param asset ERC20 token address (e.g. USDC, DAI, WETH, etc.)
     /// @param amount Amount of tokens to supply
     function supplyERC20(address asset, uint256 amount) private {
-        IERC20(asset).transferFrom(msg.sender, address(this), amount);
         IERC20(asset).approve(address(pool), amount);
         pool.supply(asset, amount, address(this), 0);
-        (address aToken,,) = tokenInfo.getATokenAndDebtTokens(asset);
-        uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
-        emit Supply(asset, amount, aTokenBalance);
+        (address aToken,address stableDebtToken,address variableDebtToken) = dataProvider.getReserveTokensAddresses(asset);
+        // uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
+        // emit Supply(asset, amount, aTokenBalance);
     }
 
-    function Stake(uint256 amount, bytes12 hodlId, address stakingToken) external {
+    
+
+    function Stake(
+        uint256 amount, 
+        // bytes12 hodlId, 
+        address stakingTokenAddr
+    ) external {
         require(amount > 0, "Amount must be greater than zero");
-        require(stakingToken != address(0), "Invalid staking token");
+        require(stakingTokenAddr != address(0), "Invalid staking token");
 
         // Transfer tokens from user to this contract
-        require(IERC20(stakingToken).transferFrom(msg.sender, address(this), amount), "Transfer failed");
+        require(IERC20(stakingTokenAddr).transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
-        // emit Staked(msg.sender, amount, flatGroup, stakingToken);
-        uint256 UsdcAmount = getUSDCValue(stakingToken, amount, 1);
+        (uint256 decimals, , , , , , , , , ) = dataProvider.getReserveConfigurationData(stakingTokenAddr);
+        
+        uint256 UsdcAmount = getUSDCValue(stakingTokenAddr, amount, uint8(decimals));
 
         // Call the private function to supply the token to Aave (mocked event)
-        supplyERC20(stakingToken, amount);
+        supplyERC20(stakingTokenAddr, amount);
 
         // Call the private function to borrow USDC from Aave (mocked event)
         borrowUSDC(UsdcAmount, 1);

@@ -14,6 +14,7 @@ remappings = [
     '@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/',
     '@aave-v3-core/contracts/=lib/aave-v3-core/contracts/',
     '@aave-v3-periphery/contracts/=lib/aave-v3-periphery/contracts/',
+    '@aave-v3-origin/contracts/=lib/aave-v3-origin/src/contracts/',
     'solidity-bytes-utils/=lib/solidity-bytes-utils/',
     '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
     '@layerzerolabs/oapp-upgradeable/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/'
