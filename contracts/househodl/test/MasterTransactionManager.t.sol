@@ -604,7 +604,6 @@ contract MasterTransactionManagerFixedTest is Test {
         assertEq(pending.hodlId, created.hodlId, "Hodl ID should match");
         assertEq(pending.amountUsd, 1000, "Amount should match");
         assertEq(pending.originatingUser, user1, "Originating user should match");
-        assertEq(pending.submittingUser, user1, "Submitting user should match");
         assertEq(pending.userChainId, USER1_CHAIN_ID, "User CHAIN_ID should match");
     }
 

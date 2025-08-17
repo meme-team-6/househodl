@@ -135,7 +135,6 @@ contract MasterTransactionManager is OApp {
             transactionId,
             params.hodlId,
             params.transaction,
-            msg.sender,
             params.userChainId
         );
 

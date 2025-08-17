@@ -18,7 +18,6 @@ contract StorageUnit is Ownable {
         uint256 amountUsd;
         address originatingUser;
         uint48 transactionCreatedAt;
-        address submittingUser;
         uint32 userChainId;
         uint48 submittedAt;
     }
@@ -149,7 +148,6 @@ contract StorageUnit is Ownable {
         bytes32 transactionId,
         bytes12 hodlId,
         Transaction memory transaction,
-        address submittingUser,
         uint32 userChainId
     ) external onlyTransactionManager {
         PendingTransaction memory newPending = PendingTransaction({
@@ -158,7 +156,6 @@ contract StorageUnit is Ownable {
             amountUsd: transaction.amountUsd,
             originatingUser: transaction.originatingUser,
             transactionCreatedAt: transaction.createdAt,
-            submittingUser: submittingUser,
             userChainId: userChainId,
             submittedAt: uint48(block.timestamp)
         });
