@@ -67,7 +67,7 @@ function GroupTransaction() {
     else return "pending";
   }, []);
 
-  const ensName = useReverseEns(
+  const { ensName, ensAvatar } = useReverseEns(
     transaction?.transaction.originatingUser ||
       "0x0000000000000000000000000000000000000000"
   );

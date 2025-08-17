@@ -30,11 +30,16 @@ export const Voter = ({
   voterAddress: string;
   vote: VoteState;
 }) => {
-  const memberName = useReverseEns(voterAddress);
+  const { ensName: memberName, ensAvatar: memberAvatar } =
+    useReverseEns(voterAddress);
   return (
     <div className="flex items-center justify-between p-3 rounded-lg border">
       <div className="flex items-center gap-3">
-        <img src={avatar} alt="avatar" className="w-8 h-8 rounded-full" />
+        <img
+          src={memberAvatar || avatar}
+          alt="avatar"
+          className="w-8 h-8 rounded-full"
+        />
         <span className="font-medium">{memberName}</span>
       </div>
       <div className="flex items-center gap-2">
