@@ -31,6 +31,8 @@ import { Textarea } from "./components/ui/textarea";
 import { AvatarCircles } from "./components/magicui/avatar-circles";
 import { Separator } from "./components/ui/separator";
 import { useHodl } from "./hooks/useHodl";
+import { useHodlPendingTransactions } from "./hooks/useHodlPendingTransactions";
+import { useCreateTransaction } from "./hooks/useCreateTransaction";
 
 // Mock data - in real app this would come from API based on id
 const defaultAvatars = [
@@ -49,40 +51,6 @@ const defaultAvatars = [
   {
     imageUrl: "https://avatars.githubusercontent.com/u/59228569",
     profileUrl: "https://github.com/safethecode",
-  },
-];
-
-// Mock activity data - split into upcoming and past expenses
-const upcomingExpenses: ActivityItem[] = [
-  {
-    id: "1",
-    type: "expense",
-    title: "Team dinner expenses",
-    description: "Approved in 2 days",
-    amount: 120,
-    user: "Alex Chen",
-    timestamp: "2 hours ago",
-    icon: Receipt,
-  },
-  {
-    id: "2",
-    type: "expense",
-    title: "Grocery expenses",
-    description: "Approved in 1 day",
-    amount: 45,
-    user: "Sarah Kim",
-    timestamp: "1 day ago",
-    icon: Receipt,
-  },
-  {
-    id: "4",
-    type: "expense",
-    title: "Transportation to venue",
-    description: "Approved in 5 days",
-    amount: 28,
-    user: "Emma Davis",
-    timestamp: "3 days ago",
-    icon: Receipt,
   },
 ];
 
@@ -158,6 +126,11 @@ interface ExpenseData {
 const GroupManagement = () => {
   const { id } = useParams<{ id: string }>();
   const { isLoading, hodl } = useHodl(id || "");
+  const { transactions: upcomingExpenses } = useHodlPendingTransactions(
+    id || ""
+  );
+
+  const { createTransaction } = useCreateTransaction(id || "");
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [expenseStep, setExpenseStep] = useState<ExpenseStep>("upload");
   const [expenseData, setExpenseData] = useState<ExpenseData>({
@@ -213,6 +186,10 @@ const GroupManagement = () => {
 
   const handleExpenseSubmit = () => {
     console.log("Submitting expense:", expenseData);
+    createTransaction({
+      name: expenseData.businessName,
+      amount: +expenseData.amount,
+    });
     // Here you would make API call
     setShowExpenseModal(false);
     setExpenseStep("upload");
@@ -383,43 +360,42 @@ const GroupManagement = () => {
           {/* Upcoming Expenses */}
           <Card className="max-w-6xl mx-auto mb-6">
             <CardHeader>
-              <CardTitle>Upcoming </CardTitle>
+              <CardTitle>Pending</CardTitle>
               <CardDescription>
                 Pending expenses and actions awaiting approval
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {upcomingExpenses.map((activity) => (
+                {upcomingExpenses.map((transaction) => (
                   <Link
-                    to={`/group/${id}/${activity.id}`}
-                    key={activity.id}
+                    to={`/group/${id}/${transaction.id}`}
+                    key={transaction.id}
                     className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex-shrink-0 p-2 rounded-full bg-orange-100 dark:bg-orange-900/20">
-                      <activity.icon className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                      <Receipt className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="font-medium text-sm text-[#00D57F]">
-                          {activity.title}
+                          {transaction.vanityName}
                         </h4>
-                        {activity.amount && (
+                        {transaction.amountUsd && (
                           <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
-                            ${activity.amount}
+                            ${transaction.amountUsd}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {activity.description}
-                      </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-muted-foreground">
-                          {activity.user}
+                          {transaction.originatingUser}
                         </span>
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground">
-                          {activity.timestamp}
+                          {new Date(
+                            transaction.submittedAt * 1000
+                          ).toLocaleString()}
                         </span>
                       </div>
                     </div>
@@ -574,7 +550,7 @@ const GroupManagement = () => {
 
                       {/* Business Name */}
                       <div>
-                        <Label htmlFor="businessName">Business Name *</Label>
+                        <Label htmlFor="businessName">Name *</Label>
                         <Input
                           id="businessName"
                           placeholder="e.g. Starbucks, Office Depot, Uber"
@@ -590,7 +566,7 @@ const GroupManagement = () => {
 
                       {/* Reason */}
                       <div>
-                        <Label htmlFor="reason">Reason for Expense *</Label>
+                        <Label htmlFor="reason">Reason for Expense</Label>
                         <Textarea
                           id="reason"
                           placeholder="e.g. Team lunch, office supplies, transportation"
@@ -626,9 +602,7 @@ const GroupManagement = () => {
                           <Button
                             onClick={() => setExpenseStep("confirmation")}
                             disabled={
-                              !expenseData.businessName ||
-                              !expenseData.reason ||
-                              !expenseData.amount
+                              !expenseData.businessName || !expenseData.amount
                             }
                           >
                             Review
