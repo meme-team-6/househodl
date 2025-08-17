@@ -3,7 +3,8 @@
 **Crypto-native group expense management with automated pooling, voting, and DeFi yield.**
 
 Turn messy receipts and group chats into clear, trackable balances. HouseHodl helps you manage group finances automatically with crypto, earning you interest on your money in the background.
-
+Started from an opinionated fork of the latest Vite package, with Tailwind, Shadcn, and React Router preinstalled -[Walt template](https://github.com/waltzaround/walt-template)
+ 
 ## 🌟 Features
 
 - **💰 Automated Yield Generation** - Earn interest on pooled funds through DeFi protocols
