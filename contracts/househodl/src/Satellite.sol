@@ -4,11 +4,12 @@ pragma solidity ^0.8.13;
 import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {MessageType, MessageEncoder} from "./Messages.sol";
+import {MessageType, MessageEncoder, CreateHodl} from "./Messages.sol";
 
 contract Satellite is OApp, OAppOptionsType3 {
     /// @notice Msg type for sending a string, for use in OAppOptionsType3 as an enforced option
     uint16 public constant SEND = 1;
+    uint32 internal mtmEid;
 
     /// @notice Emitted when a message is received and parsed
     event MessageReceived(string msgType, string data);
@@ -18,11 +19,43 @@ contract Satellite is OApp, OAppOptionsType3 {
     /// @param _owner    The address permitted to configure this OApp
     constructor(
         address _endpoint,
-        address _owner
+        address _owner,
+        uint32 _mtmEid
     ) OApp(_endpoint, _owner) {
         if (_owner != _msgSender()) {
             _transferOwnership(_owner);
         }
+
+        mtmEid = _mtmEid;
+    }
+
+    /**
+     * Set the Master Transaction Manger's contract ID so that we can invoke it.
+     * @param _mtmEid The Endpoint ID of the chain that the MasterTransactionManeger contract is depolyed on
+     * @param addr The address of the MasterTransactionManager contract as bytes32, used for forign chains
+     */
+    function _setMtmEidB32(uint32 _mtmEid, bytes32 addr) internal {
+        _setPeer(mtmEid, bytes32(0));
+        _setPeer(_mtmEid, addr);
+        mtmEid = _mtmEid;
+    }
+
+    /**
+     * Set the Master Transaction Manger's contract ID so that we can invoke it.
+     * @param _mtmEid The Endpoint ID of the chain that the MasterTransactionManeger contract is depolyed on
+     * @param addr The address of the MasterTransactionManager contract as bytes32, used for forign chains
+     */
+    function setMtmEidB32(uint32 _mtmEid, bytes32 addr) external onlyOwner {
+        _setMtmEidB32(_mtmEid, addr);
+    }
+
+    /**
+     * Set the Master Transaction Manger's contract ID so that we can invoke it.
+     * @param _mtmEid The Endpoint ID of the chain that the MasterTransactionManeger contract is depolyed on
+     * @param addr The address of the MasterTransactionManager contract as bytes32, used for forign chains
+     */
+    function setMtmEid(uint32 _mtmEid, address addr) external onlyOwner {
+        _setMtmEidB32(_mtmEid, bytes32(uint256(uint160(addr))));
     }
 
     /**
@@ -39,12 +72,9 @@ contract Satellite is OApp, OAppOptionsType3 {
         bytes calldata _options,
         bool _payInLzToken
     ) public view returns (MessagingFee memory fee) {
-        bytes memory _message = abi.encode(_packet);
-        // combineOptions (from OAppOptionsType3) merges enforced options set by the contract owner
-        // with any additional execution options provided by the caller
         fee = _quote(
             _dstEid,
-            _message,
+            _packet,
             combineOptions(_dstEid, SEND, _options),
             _payInLzToken
         );
@@ -61,33 +91,20 @@ contract Satellite is OApp, OAppOptionsType3 {
     /// @param _dstEid   Destination Endpoint ID (uint32)
     /// @param _string  The string to send
     /// @param _options  Execution options for gas on the destination (bytes)
-    function sendString(
+    function sendCreateHodl(
         uint32 _dstEid,
-        string calldata _string,
+        CreateHodl _string,
         bytes calldata _options
     ) external payable {
-        // 1. (Optional) Update any local state here.
-        //    e.g., record that a message was "sent":
-        //    sentCount += 1;
+        bytes memory _message = MessageEncoder.encodeCreateHodl(_string);
 
-        // 2. Encode any data structures you wish to send into bytes
-        //    You can use abi.encode, abi.encodePacked, or directly splice bytes
-        //    if you know the format of your data structures
-        // Build the payload using the format "<MESSAGE>:<DATA>" and ABI-encode it
-        // Here we use a simple message type tag "STRING" for demonstration.
-        bytes memory _message = abi.encode(
-            string.concat("STRING", ":", _string)
+        MessagingFee memory fee = quotePacket(
+            _dstEid,
+            abi.encode(_string),
+            _options,
+            false
         );
 
-        // 3. Call OAppSender._lzSend to package and dispatch the cross-chain message
-        //    - _dstEid:   remote chain's Endpoint ID
-        //    - _message:  ABI-encoded string
-        //    - _options:  combined execution options (enforced + caller-provided)
-        //    - MessagingFee(msg.value, 0): pay all gas as native token; no ZRO
-        //    - payable(msg.sender): refund excess gas to caller
-        //
-        //    combineOptions (from OAppOptionsType3) merges enforced options set by the contract owner
-        //    with any additional execution options provided by the caller
         _lzSend(
             _dstEid,
             _message,
