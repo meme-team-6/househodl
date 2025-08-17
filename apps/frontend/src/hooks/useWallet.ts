@@ -1,14 +1,7 @@
-import { useUserWallets } from "@dynamic-labs/sdk-react-core";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 export const useWallet = () => {
-  const wallets = useUserWallets();
+  const { primaryWallet } = useDynamicContext();
 
-  if (!wallets.length) {
-    console.warn("No wallets were found, we may still be loading.", wallets);
-    return undefined;
-  }
-
-  const wallet = wallets[0];
-
-  return wallet;
+  return primaryWallet;
 };

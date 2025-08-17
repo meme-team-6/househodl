@@ -1,8 +1,23 @@
 import { useParams, Link } from "react-router-dom";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Receipt, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ArrowLeft,
+  Receipt,
+  Users,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import { useHodl } from "./hooks/useHodl";
+import { VotingStatus } from "./VotingStatus";
 
 // Extend Window interface to include our custom property
 declare global {
@@ -18,7 +33,7 @@ interface TransactionData {
   amount: number;
   submittedBy: string;
   submittedAt: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   votesRequired: number;
   currentVotes: {
     approve: number;
@@ -26,16 +41,21 @@ interface TransactionData {
   };
   voters: Array<{
     name: string;
-    vote: 'approve' | 'reject' | null;
+    vote: "approve" | "reject" | null;
     avatar: string;
   }>;
 }
 
 function GroupTransaction() {
-  const { id, transactionId } = useParams<{ id: string; transactionId: string }>();
+  const { id, transactionId } = useParams<{
+    id: string;
+    transactionId: string;
+  }>();
+
+  const { isLoading, hodl } = useHodl(id || "");
 
   const handleMobileMenuClick = () => {
-    if (typeof window !== 'undefined' && window.openMobileSidebar) {
+    if (typeof window !== "undefined" && window.openMobileSidebar) {
       window.openMobileSidebar();
     }
   };
@@ -44,7 +64,8 @@ function GroupTransaction() {
   const transactionData: TransactionData = {
     id: transactionId || "1",
     title: "Team dinner expenses",
-    description: "Dinner at local restaurant for team building event. Includes appetizers, main courses, and drinks for 4 people.",
+    description:
+      "Dinner at local restaurant for team building event. Includes appetizers, main courses, and drinks for 4 people.",
     amount: 120,
     submittedBy: "Alex Chen",
     submittedAt: "2 hours ago",
@@ -52,46 +73,59 @@ function GroupTransaction() {
     votesRequired: 3,
     currentVotes: {
       approve: 1,
-      reject: 0
+      reject: 0,
     },
     voters: [
-      { name: "Alex Chen", vote: "approve", avatar: "https://avatars.githubusercontent.com/u/16860528" },
-      { name: "Sarah Kim", vote: null, avatar: "https://avatars.githubusercontent.com/u/20110627" },
-      { name: "Mike Johnson", vote: null, avatar: "https://avatars.githubusercontent.com/u/106103625" },
-      { name: "Emma Davis", vote: null, avatar: "https://avatars.githubusercontent.com/u/59228569" }
-    ]
+      {
+        name: "Alex Chen",
+        vote: "approve",
+        avatar: "https://avatars.githubusercontent.com/u/16860528",
+      },
+      {
+        name: "Sarah Kim",
+        vote: null,
+        avatar: "https://avatars.githubusercontent.com/u/20110627",
+      },
+      {
+        name: "Mike Johnson",
+        vote: null,
+        avatar: "https://avatars.githubusercontent.com/u/106103625",
+      },
+      {
+        name: "Emma Davis",
+        vote: null,
+        avatar: "https://avatars.githubusercontent.com/u/59228569",
+      },
+    ],
   };
 
-  const handleVote = (vote: 'approve' | 'reject') => {
+  const handleVote = (vote: "approve" | "reject") => {
     // In a real app, this would make an API call
     console.log(`Voted ${vote} on transaction ${transactionId}`);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-yellow-100 text-yellow-800";
     }
-  };
-
-  const getVoteIcon = (vote: string | null) => {
-    if (vote === 'approve') return <CheckCircle className="h-4 w-4 text-green-600" />;
-    if (vote === 'reject') return <XCircle className="h-4 w-4 text-red-600" />;
-    return <Clock className="h-4 w-4 text-gray-400" />;
   };
 
   return (
     <div className="flex h-screen overflow-hidden">
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header 
-          title="Househodl" 
-          onMobileMenuClick={handleMobileMenuClick}
-        />
+        <Header title="Househodl" onMobileMenuClick={handleMobileMenuClick} />
         <main className="flex-1 overflow-auto p-4 sm:p-6 bg-muted/10">
           {/* Back Navigation */}
           <div className="mb-6 max-w-4xl mx-auto">
-            <Link to={`/group/${id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              to={`/group/${id}`}
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
               <ArrowLeft className="h-4 w-4" />
               Back to Group
             </Link>
@@ -107,14 +141,20 @@ function GroupTransaction() {
                       <Receipt className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">{transactionData.title}</CardTitle>
+                      <CardTitle className="text-xl">
+                        {transactionData.title}
+                      </CardTitle>
                       <CardDescription className="mt-1">
-                        Submitted by {transactionData.submittedBy} • {transactionData.submittedAt}
+                        Submitted by {transactionData.submittedBy} •{" "}
+                        {transactionData.submittedAt}
                       </CardDescription>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transactionData.status)}`}>
-                    {transactionData.status.charAt(0).toUpperCase() + transactionData.status.slice(1)}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transactionData.status)}`}
+                  >
+                    {transactionData.status.charAt(0).toUpperCase() +
+                      transactionData.status.slice(1)}
                   </span>
                 </div>
               </CardHeader>
@@ -122,93 +162,54 @@ function GroupTransaction() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-2">Description</h4>
-                    <p className="text-muted-foreground">{transactionData.description}</p>
+                    <p className="text-muted-foreground">
+                      {transactionData.description}
+                    </p>
                   </div>
                   <div className="flex items-center gap-6">
                     <div>
                       <h4 className="font-medium">Amount</h4>
-                      <p className="text-2xl font-bold">${transactionData.amount}</p>
+                      <p className="text-2xl font-bold">
+                        ${transactionData.amount}
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-medium">Per Person</h4>
-                      <p className="text-2xl font-bold">${Math.round(transactionData.amount / transactionData.voters.length)}</p>
+                      <p className="text-2xl font-bold">
+                        $
+                        {Math.round(
+                          transactionData.amount / (hodl?.members.length || 1)
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Voting Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Voting Status
-                </CardTitle>
-                <CardDescription>
-                  {transactionData.currentVotes.approve + transactionData.currentVotes.reject} of {transactionData.votesRequired} votes required
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Vote Progress */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 rounded-lg bg-green-50">
-                      <div className="text-2xl font-bold text-green-600">{transactionData.currentVotes.approve}</div>
-                      <div className="text-sm text-green-600">Approve</div>
-                    </div>
-                    <div className="text-center p-4 rounded-lg bg-red-50">
-                      <div className="text-2xl font-bold text-red-600">{transactionData.currentVotes.reject}</div>
-                      <div className="text-sm text-red-600">Reject</div>
-                    </div>
-                  </div>
-
-                  {/* Individual Votes */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium">Member Votes</h4>
-                    {transactionData.voters.map((voter, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={voter.avatar} 
-                            alt={voter.name}
-                            className="w-8 h-8 rounded-full"
-                          />
-                          <span className="font-medium">{voter.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getVoteIcon(voter.vote)}
-                          <span className="text-sm text-muted-foreground">
-                            {voter.vote ? voter.vote.charAt(0).toUpperCase() + voter.vote.slice(1) : 'Pending'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <VotingStatus hodlId={id || ""} />
 
             {/* Voting Actions */}
-            {transactionData.status === 'pending' && (
+            {transactionData.status === "pending" && (
               <Card>
                 <CardHeader>
                   <CardTitle>Cast Your Vote</CardTitle>
                   <CardDescription>
-                    Review the transaction details and vote to approve or reject this expense.
+                    Review the transaction details and vote to approve or reject
+                    this expense.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex gap-4">
-                    <Button 
-                      onClick={() => handleVote('approve')}
+                    <Button
+                      onClick={() => handleVote("approve")}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Approve Transaction
                     </Button>
-                    <Button 
-                      onClick={() => handleVote('reject')}
+                    <Button
+                      onClick={() => handleVote("reject")}
                       variant="destructive"
                       className="flex-1"
                     >
@@ -232,9 +233,15 @@ function GroupTransaction() {
                 <div className="space-y-4">
                   <div className="border rounded-lg p-4 bg-white">
                     <div className="text-center mb-4">
-                      <h3 className="font-bold text-gray-800">Sakura Ramen House</h3>
-                      <p className="text-sm text-gray-600">123 Main Street, NYC</p>
-                      <p className="text-sm text-gray-600">Tel: (555) 123-4567</p>
+                      <h3 className="font-bold text-gray-800">
+                        Sakura Ramen House
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        123 Main Street, NYC
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Tel: (555) 123-4567
+                      </p>
                     </div>
                     <div className="border-t border-dashed border-gray-300 pt-3">
                       <div className="space-y-1 text-sm">

@@ -34,7 +34,7 @@ export function Header({
             <span className="sr-only">Toggle Menu</span>
           </Button>
         )}
-        <a href="/home-filled">
+        <a href="/home">
           <img src="/logo.svg" alt="Logo" className="h-5 w-auto" />
         </a>
       </div>

@@ -313,21 +313,22 @@ function Landing() {
         {/* Final CTA */}
         <section className="px-6 py-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-bold mb-4">Let's Make Group Expenses Fun Again! 🎉</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Let's Make Group Expenses Fun Again! 🎉
+            </h2>
             <p className="text-muted-foreground mb-8">
-              No more awkward money conversations or spreadsheet headaches. Join your friends in making group expenses simple, fair, and even profitable. 
-              Your future self will thank you! ✨
+              No more awkward money conversations or spreadsheet headaches. Join
+              your friends in making group expenses simple, fair, and even
+              profitable. Your future self will thank you! ✨
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/home-filled">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Sign up
-                </Button>
-              </Link>
-           
+              <DynamicConnectButton buttonClassName="h-10 px-4 py-2 inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm cursor-pointer font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-[#00D57F] hover:bg-accent hover:text-accent-foreground">
+                Sign up
+              </DynamicConnectButton>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
-              Free to try • No hidden fees • Built with love for groups like yours 💜
+              Free to try • No hidden fees • Built with love for groups like
+              yours 💜
             </p>
           </div>
         </section>

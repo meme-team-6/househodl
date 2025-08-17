@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { AvatarCircles } from "./components/magicui/avatar-circles";
 import { useHodl } from "./hooks/useHodl";
 const defaultAvatars = [
@@ -30,10 +31,10 @@ export const Hodl = ({ hodlId }: { hodlId: string }) => {
   const { hodl } = useHodl(hodlId);
 
   return (
-    <a
+    <Link
       key={hodlId}
       className="border rounded-lg p-4 bg-background flex flex-col gap-2"
-      href={`/group/${hodlId}`}
+      to={`/group/${hodlId}`}
     >
       <div>
         <h2 className="text-xl font-semibold text-[#00D57F] underline mb-2 tracking-tighter">
@@ -49,6 +50,6 @@ export const Hodl = ({ hodlId }: { hodlId: string }) => {
         numPeople={hodl?.members.length}
         avatarUrls={defaultAvatars}
       />
-    </a>
+    </Link>
   );
 };
