@@ -55,16 +55,11 @@ contract MasterTransactionManager is OApp {
     }
 
 
-    constructor(address _endpoint, address _owner, address _storageUnit, ContractAddresses[] memory _contracts)
+    constructor(address _endpoint, address _owner, address _storageUnit)
         OApp(_endpoint, _owner)
     {
         if (_storageUnit == address(0)) revert InvalidStorageUnit();
         storageUnit = StorageUnit(_storageUnit);
-
-        for (uint256 i = 0; i < _contracts.length; i++) {
-            contractEid[_contracts[i].chainId] = _contracts[i].eid;
-            _setPeer(_contracts[i].eid, bytes32(uint256(uint160(_contracts[i].contractAddress))));
-        }
     }
 
     function createHodl(CreateHodl memory params) public returns (HodlCreated memory) {
@@ -182,6 +177,13 @@ contract MasterTransactionManager is OApp {
         }
         
         return transactions;
+    }
+
+    function setSatellite(ContractAddresses[] memory _contracts) external onlyOwner {
+        for (uint256 i = 0; i < _contracts.length; i++) {
+            contractEid[_contracts[i].chainId] = _contracts[i].eid;
+            _setPeer(_contracts[i].eid, bytes32(uint256(uint160(_contracts[i].contractAddress))));
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
