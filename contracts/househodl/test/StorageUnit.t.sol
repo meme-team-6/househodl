@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 import {StorageUnit} from "../src/StorageUnit.sol";
+import {User} from "../src/Common.sol";
 
 contract StorageUnitTest is Test {
     StorageUnit public storageUnit;
@@ -52,10 +53,10 @@ contract StorageUnitTest is Test {
         storageUnit.createHodl(hodlId, user1, chainId1);
         
         assertEq(storageUnit.getHodlCount(), 1, "Should have 1 hodl");
-        address[] memory users = storageUnit.getHodlUsers(hodlId);
+        User[] memory users = storageUnit.getHodlUsers(hodlId);
         assertEq(users.length, 1, "Hodl should have 1 user");
-        assertEq(users[0], user1, "User should be user1");
-        assertEq(storageUnit.mapUserToEid(user1), chainId1, "User chain ID should be set");
+        assertEq(users[0].userAddress, user1, "User should be user1");
+        assertEq(users[0].eid, chainId1, "User chain ID should be set");
     }
 
     function testCreateHodl_RevertWhenNotTransactionManager() public {
@@ -77,11 +78,11 @@ contract StorageUnitTest is Test {
         vm.prank(transactionManager);
         storageUnit.addUserToHodl(hodlId, user2, chainId2);
         
-        address[] memory users = storageUnit.getHodlUsers(hodlId);
+        User[] memory users = storageUnit.getHodlUsers(hodlId);
         assertEq(users.length, 2, "Hodl should have 2 users");
-        assertEq(users[0], user1, "First user should be user1");
-        assertEq(users[1], user2, "Second user should be user2");
-        assertEq(storageUnit.mapUserToEid(user2), chainId2, "User2 chain ID should be set");
+        assertEq(users[0].userAddress, user1, "First user should be user1");
+        assertEq(users[1].userAddress, user2, "Second user should be user2");
+        assertEq(users[1].eid, chainId2, "User2 chain ID should be set");
     }
 
     function testAddUserToHodl_RevertWhenNotTransactionManager() public {
@@ -106,19 +107,10 @@ contract StorageUnitTest is Test {
         vm.prank(transactionManager);
         storageUnit.addUserToHodl(hodlId, user2, chainId2);
         
-        address[] memory users = storageUnit.getHodlUsers(hodlId);
+        User[] memory users = storageUnit.getHodlUsers(hodlId);
         assertEq(users.length, 2, "Should return 2 users");
-        assertEq(users[0], user1, "First user should be user1");
-        assertEq(users[1], user2, "Second user should be user2");
+        assertEq(users[0].userAddress, user1, "First user should be user1");
+        assertEq(users[1].userAddress, user2, "Second user should be user2");
     }
 
-    function testMapUserToEid_ReturnsCorrectEid() public {
-        bytes12 hodlId = bytes12(uint96(0));
-        
-        vm.prank(transactionManager);
-        storageUnit.createHodl(hodlId, user1, chainId1);
-        
-        assertEq(storageUnit.mapUserToEid(user1), chainId1, "Should return correct chain ID for user1");
-        assertEq(storageUnit.mapUserToEid(user2), uint32(0), "Should return zero for unmapped user");
-    }
 }

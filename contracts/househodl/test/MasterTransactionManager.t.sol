@@ -4,7 +4,8 @@ pragma solidity ^0.8.13;
 import {Test} from "forge-std/Test.sol";
 import {MasterTransactionManager} from "../src/MasterTransactionManager.sol";
 import {StorageUnit} from "../src/StorageUnit.sol";
-import {CreateHodl, HodlCreated, AddUserToHodl} from "../src/Messages.sol";
+import {CreateHodl, HodlCreated, AddUserToHodl, SubmitTransaction} from "../src/Messages.sol";
+import {Transaction, Share, HodlGroup, User} from "../src/Common.sol";
 
 contract MasterTransactionManagerFixedTest is Test {
     MasterTransactionManager public manager;
@@ -78,13 +79,13 @@ contract MasterTransactionManagerFixedTest is Test {
         HodlCreated memory result = manager.createHodl(params);
         bytes12 expectedHodlId = bytes12(uint96(0)); // First hodl should have ID 0
 
-        assertEq(result.hodleId, expectedHodlId, "Returned hodl ID should be correct");
+        assertEq(result.hodlId, expectedHodlId, "Returned hodl ID should be correct");
         assertEq(storageUnit.getHodlCount(), 1, "Hodl count should be 1");
         
-        address[] memory users = storageUnit.getHodlUsers(expectedHodlId);
+        User[] memory users = storageUnit.getHodlUsers(expectedHodlId);
         assertEq(users.length, 1, "Hodl should have 1 user");
-        assertEq(users[0], user1, "User should be user1");
-        assertEq(storageUnit.mapUserToEid(user1), USER1_EID, "User1 EID should be set correctly");
+        assertEq(users[0].userAddress, user1, "User should be user1");
+        assertEq(users[0].eid, USER1_EID, "User1 EID should be set correctly");
     }
 
     function testCreateHodl_RevertWithZeroAddress() public {
@@ -112,8 +113,8 @@ contract MasterTransactionManagerFixedTest is Test {
         });
         HodlCreated memory result2 = manager.createHodl(params2);
 
-        assertEq(result1.hodleId, bytes12(uint96(0)), "First hodl ID should be 0");
-        assertEq(result2.hodleId, bytes12(uint96(1)), "Second hodl ID should be 1");
+        assertEq(result1.hodlId, bytes12(uint96(0)), "First hodl ID should be 0");
+        assertEq(result2.hodlId, bytes12(uint96(1)), "Second hodl ID should be 1");
         assertEq(storageUnit.getHodlCount(), 2, "Should have 2 hodls");
     }
 
@@ -131,7 +132,7 @@ contract MasterTransactionManagerFixedTest is Test {
 
         // Add user to hodl
         AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created.hodleId,
+            hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
             newUserEid: USER2_EID
@@ -140,11 +141,11 @@ contract MasterTransactionManagerFixedTest is Test {
         vm.prank(user1); // Only first user can add new users
         manager.addUserToHodl(addParams);
 
-        address[] memory users = storageUnit.getHodlUsers(created.hodleId);
+        User[] memory users = storageUnit.getHodlUsers(created.hodlId);
         assertEq(users.length, 2, "Hodl should have 2 users");
-        assertEq(users[0], user1, "First user should be user1");
-        assertEq(users[1], user2, "Second user should be user2");
-        assertEq(storageUnit.mapUserToEid(user2), USER2_EID, "User2 EID should be set correctly");
+        assertEq(users[0].userAddress, user1, "First user should be user1");
+        assertEq(users[1].userAddress, user2, "Second user should be user2");
+        assertEq(users[1].eid, USER2_EID, "User2 EID should be set correctly");
     }
 
     function testAddUserToHodl_RevertWhenNotFirstUser() public {
@@ -157,7 +158,7 @@ contract MasterTransactionManagerFixedTest is Test {
 
         // Try to add user as non-first user
         AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created.hodleId,
+            hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
             newUserEid: USER2_EID
@@ -192,7 +193,7 @@ contract MasterTransactionManagerFixedTest is Test {
         HodlCreated memory created = manager.createHodl(createParams);
 
         AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created.hodleId,
+            hodlId: created.hodlId,
             newUser: address(0),
             invitingUser: user1,
             newUserEid: USER2_EID
@@ -212,7 +213,7 @@ contract MasterTransactionManagerFixedTest is Test {
         HodlCreated memory created = manager.createHodl(createParams);
 
         AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created.hodleId,
+            hodlId: created.hodlId,
             newUser: user2,
             invitingUser: address(0),
             newUserEid: USER2_EID
@@ -249,13 +250,13 @@ contract MasterTransactionManagerFixedTest is Test {
         HodlCreated memory created = manager.createHodl(createParams);
 
         // Test initial user
-        address[] memory users = manager.getHodlUsers(created.hodleId);
+        address[] memory users = manager.getHodlUsersAddresses(created.hodlId);
         assertEq(users.length, 1, "Should have 1 user initially");
         assertEq(users[0], user1, "Should be user1");
 
         // Add another user
         AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created.hodleId,
+            hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
             newUserEid: USER2_EID
@@ -264,58 +265,27 @@ contract MasterTransactionManagerFixedTest is Test {
         manager.addUserToHodl(addParams);
 
         // Test after adding user
-        users = manager.getHodlUsers(created.hodleId);
+        users = manager.getHodlUsersAddresses(created.hodlId);
         assertEq(users.length, 2, "Should have 2 users");
         assertEq(users[0], user1, "First user should be user1");
         assertEq(users[1], user2, "Second user should be user2");
     }
 
     function testMapUserToEid() public {
-        // Test unmapped user
-        assertEq(manager.mapUserToEid(user1), 0, "Unmapped user should return 0");
-
         // Create hodl
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
             initialUserEid: USER1_EID
         });
-        manager.createHodl(params);
+        HodlCreated memory result = manager.createHodl(params);
 
         // Test mapped user
-        assertEq(manager.mapUserToEid(user1), USER1_EID, "Should return correct EID for mapped user");
+        assertEq(manager.getHodlUsers(result.hodlId)[0].eid, USER1_EID, "Should return correct EID for mapped user");
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
     // Convenience Function Tests
     // ──────────────────────────────────────────────────────────────────────────────
-
-    function testGetHodlUsersWithEid() public {
-        // Create hodl
-        CreateHodl memory createParams = CreateHodl({
-            initialUser: user1,
-            initialUserEid: USER1_EID
-        });
-        HodlCreated memory created = manager.createHodl(createParams);
-
-        // Add second user
-        AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created.hodleId,
-            newUser: user2,
-            invitingUser: user1,
-            newUserEid: USER2_EID
-        });
-        vm.prank(user1);
-        manager.addUserToHodl(addParams);
-
-        // Test convenience function
-        MasterTransactionManager.UserWithEid[] memory usersWithEid = manager.getHodlUsersWithEid(created.hodleId);
-        
-        assertEq(usersWithEid.length, 2, "Should return 2 users with EIDs");
-        assertEq(usersWithEid[0].user, user1, "First user should be user1");
-        assertEq(usersWithEid[0].eid, USER1_EID, "First user EID should be correct");
-        assertEq(usersWithEid[1].user, user2, "Second user should be user2");
-        assertEq(usersWithEid[1].eid, USER2_EID, "Second user EID should be correct");
-    }
 
     function testGetUserHodls_SingleUser() public {
         // Create first hodl with user1
@@ -335,7 +305,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Test user1's hodls
         bytes12[] memory user1Hodls = manager.getUserHodls(user1);
         assertEq(user1Hodls.length, 1, "User1 should be in 1 hodl");
-        assertEq(user1Hodls[0], created1.hodleId, "Should return correct hodl ID");
+        assertEq(user1Hodls[0], created1.hodlId, "Should return correct hodl ID");
 
         // Test user2's hodls
         bytes12[] memory user2Hodls = manager.getUserHodls(user2);
@@ -359,7 +329,7 @@ contract MasterTransactionManagerFixedTest is Test {
 
         // Add user1 to second hodl
         AddUserToHodl memory addParams = AddUserToHodl({
-            hodlId: created2.hodleId,
+            hodlId: created2.hodlId,
             newUser: user1,
             invitingUser: user2,
             newUserEid: USER1_EID
@@ -375,8 +345,8 @@ contract MasterTransactionManagerFixedTest is Test {
         bool found1 = false;
         bool found2 = false;
         for (uint i = 0; i < user1Hodls.length; i++) {
-            if (user1Hodls[i] == created1.hodleId) found1 = true;
-            if (user1Hodls[i] == created2.hodleId) found2 = true;
+            if (user1Hodls[i] == created1.hodlId) found1 = true;
+            if (user1Hodls[i] == created2.hodlId) found2 = true;
         }
         assertTrue(found1, "Should find first hodl");
         assertTrue(found2, "Should find second hodl");
@@ -410,7 +380,7 @@ contract MasterTransactionManagerFixedTest is Test {
 
         // Add user4 to first and third hodl only
         AddUserToHodl memory addParams1 = AddUserToHodl({
-            hodlId: created1.hodleId,
+            hodlId: created1.hodlId,
             newUser: user4,
             invitingUser: user1,
             newUserEid: USER4_EID
@@ -463,7 +433,7 @@ contract MasterTransactionManagerFixedTest is Test {
         HodlCreated memory created1 = manager.createHodl(params1);
 
         AddUserToHodl memory addParams1 = AddUserToHodl({
-            hodlId: created1.hodleId,
+            hodlId: created1.hodlId,
             newUser: user2,
             invitingUser: user1,
             newUserEid: USER2_EID
@@ -479,7 +449,7 @@ contract MasterTransactionManagerFixedTest is Test {
         HodlCreated memory created2 = manager.createHodl(params2);
 
         AddUserToHodl memory addParams2 = AddUserToHodl({
-            hodlId: created2.hodleId,
+            hodlId: created2.hodlId,
             newUser: user1,
             invitingUser: user3,
             newUserEid: USER1_EID
@@ -488,7 +458,7 @@ contract MasterTransactionManagerFixedTest is Test {
         manager.addUserToHodl(addParams2);
 
         AddUserToHodl memory addParams3 = AddUserToHodl({
-            hodlId: created2.hodleId,
+            hodlId: created2.hodlId,
             newUser: user4,
             invitingUser: user3,
             newUserEid: USER4_EID
@@ -500,11 +470,11 @@ contract MasterTransactionManagerFixedTest is Test {
         assertEq(manager.getHodlCount(), 2, "Should have 2 hodls");
         
         // Check hodl 1
-        MasterTransactionManager.UserWithEid[] memory hodl1Users = manager.getHodlUsersWithEid(created1.hodleId);
+        User[] memory hodl1Users = manager.getHodlUsers(created1.hodlId);
         assertEq(hodl1Users.length, 2, "Hodl 1 should have 2 users");
         
         // Check hodl 2
-        MasterTransactionManager.UserWithEid[] memory hodl2Users = manager.getHodlUsersWithEid(created2.hodleId);
+        User[] memory hodl2Users = manager.getHodlUsers(created2.hodlId);
         assertEq(hodl2Users.length, 3, "Hodl 2 should have 3 users");
 
         // Check user1 is in both hodls
@@ -522,5 +492,370 @@ contract MasterTransactionManagerFixedTest is Test {
         // Check user4 is only in hodl 2
         bytes12[] memory user4Hodls = manager.getUserHodls(user4);
         assertEq(user4Hodls.length, 1, "User4 should be in 1 hodl");
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Transaction Management Tests
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function testSubmitTransaction_Success() public {
+        // Create hodl and add users
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Create a transaction
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000 // 100%
+        });
+
+        Transaction memory transaction = Transaction({
+            amountUsd: 1000,
+            shares: shares,
+            originatingUser: user1,
+            createdAt: uint48(block.timestamp)
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            transaction: transaction,
+            userEid: USER1_EID
+        });
+
+        // Submit transaction
+        vm.prank(user1);
+        bytes32 transactionId = manager.submitTransaction(submitParams);
+
+        // Verify transaction was recorded
+        assertEq(manager.getPendingTransactionCount(), 1, "Should have 1 pending transaction");
+        
+        StorageUnit.PendingTransaction memory pending = manager.getPendingTransaction(transactionId);
+        assertEq(pending.hodlId, created.hodlId, "Hodl ID should match");
+        assertEq(pending.amountUsd, 1000, "Amount should match");
+        assertEq(pending.originatingUser, user1, "Originating user should match");
+        assertEq(pending.submittingUser, user1, "Submitting user should match");
+        assertEq(pending.userEid, USER1_EID, "User EID should match");
+    }
+
+    function testSubmitTransaction_RevertWhenUserNotInHodl() public {
+        // Create hodl with user1
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Create transaction with user2 (not in hodl)
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user2,
+            percentageInBasisPoints: 10000
+        });
+
+        Transaction memory transaction = Transaction({
+            amountUsd: 1000,
+            shares: shares,
+            originatingUser: user2,
+            createdAt: uint48(block.timestamp)
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            transaction: transaction,
+            userEid: USER2_EID
+        });
+
+        // Should revert because user2 is not in the hodl
+        vm.expectRevert("User not part of hodl");
+        vm.prank(user2);
+        manager.submitTransaction(submitParams);
+    }
+
+    function testSubmitTransaction_RevertWhenOriginatingUserMismatch() public {
+        // Create hodl with user1
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Create transaction where originating user doesn't match msg.sender
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        Transaction memory transaction = Transaction({
+            amountUsd: 1000,
+            shares: shares,
+            originatingUser: user2, // Different from msg.sender
+            createdAt: uint48(block.timestamp)
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            transaction: transaction,
+            userEid: USER1_EID
+        });
+
+        // Should revert because originating user doesn't match
+        vm.expectRevert("Only originating user can submit");
+        vm.prank(user1);
+        manager.submitTransaction(submitParams);
+    }
+
+    function testFindAndProcessExpiredTransactions_NoExpired() public {
+        uint256 processed = manager.findAndProcessExpiredTransactions();
+        assertEq(processed, 0, "Should process 0 transactions when none are expired");
+    }
+
+    function testFindAndProcessExpiredTransactions_WithExpired() public {
+        // Create hodl and submit transaction
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        Transaction memory transaction = Transaction({
+            amountUsd: 1000,
+            shares: shares,
+            originatingUser: user1,
+            createdAt: uint48(block.timestamp)
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            transaction: transaction,
+            userEid: USER1_EID
+        });
+
+        vm.prank(user1);
+        manager.submitTransaction(submitParams);
+
+        // Fast forward time by more than 7 days
+        vm.warp(block.timestamp + 8 days);
+
+        // Process expired transactions
+        uint256 processed = manager.findAndProcessExpiredTransactions();
+        assertEq(processed, 1, "Should process 1 expired transaction");
+        assertEq(manager.getPendingTransactionCount(), 0, "Should have 0 pending transactions after processing");
+    }
+
+    function testTransactionEvents() public {
+        // Create hodl
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Create transaction
+        Share[] memory shares = new Share[](1);
+        shares[0] = Share({
+            userAddress: user1,
+            percentageInBasisPoints: 10000
+        });
+
+        Transaction memory transaction = Transaction({
+            amountUsd: 1500,
+            shares: shares,
+            originatingUser: user1,
+            createdAt: uint48(block.timestamp)
+        });
+
+        SubmitTransaction memory submitParams = SubmitTransaction({
+            hodlId: created.hodlId,
+            transaction: transaction,
+            userEid: USER1_EID
+        });
+
+        // Check that TransactionSubmitted event is emitted with correct parameters
+        vm.expectEmit(false, true, true, true); // Don't check the transaction ID (first indexed param)
+        emit MasterTransactionManager.TransactionSubmitted(
+            bytes32(0), // We can't predict the exact transaction ID
+            created.hodlId,
+            user1,
+            1500,
+            USER1_EID
+        );
+
+        vm.prank(user1);
+        manager.submitTransaction(submitParams);
+    }
+    
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Hodl Management Tests
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function testSetHodlVanityName_Success() public {
+        // Create hodl
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        bytes32 vanityName = bytes32("MyAwesomeHodl");
+
+        // Set vanity name
+        vm.expectEmit(true, true, false, true);
+        emit MasterTransactionManager.HodlVanityNameUpdated(
+            created.hodlId,
+            user1,
+            bytes32(0), // old name (empty)
+            vanityName
+        );
+
+        vm.prank(user1);
+        manager.setHodlVanityName(created.hodlId, vanityName);
+
+        // Verify vanity name was set
+        bytes32 retrievedName = manager.getHodlGroup(created.hodlId).vanityName;
+        assertEq(retrievedName, vanityName, "Vanity name should match");
+    }
+
+    function testSetHodlVanityName_RevertWhenUserNotInHodl() public {
+        // Create hodl with user1
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        bytes32 vanityName = bytes32("MyAwesomeHodl");
+
+        // User2 tries to set vanity name (not in hodl)
+        vm.expectRevert("Only hodl members can update vanity name");
+        vm.prank(user2);
+        manager.setHodlVanityName(created.hodlId, vanityName);
+    }
+
+    function testSetHodlSpendLimit_Success() public {
+        // Create hodl
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        uint256 spendLimit = 5000; // $5000 USD
+
+        // Set spend limit
+        vm.expectEmit(true, true, false, true);
+        emit MasterTransactionManager.HodlSpendLimitUpdated(
+            created.hodlId,
+            user1,
+            0, // old limit (0)
+            spendLimit
+        );
+
+        vm.prank(user1);
+        manager.setHodlSpendLimit(created.hodlId, spendLimit);
+
+        // Verify spend limit was set
+        uint256 retrievedLimit = manager.getHodlGroup(created.hodlId).spendLimit;
+        assertEq(retrievedLimit, spendLimit, "Spend limit should match");
+    }
+
+    function testSetHodlSpendLimit_RevertWhenUserNotInHodl() public {
+        // Create hodl with user1
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        uint256 spendLimit = 5000;
+
+        // User2 tries to set spend limit (not in hodl)
+        vm.expectRevert("Only hodl members can update spend limit");
+        vm.prank(user2);
+        manager.setHodlSpendLimit(created.hodlId, spendLimit);
+    }
+
+    function testGetHodlGroup_Success() public {
+        // Create hodl
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        // Set vanity name and spend limit
+        bytes32 vanityName = bytes32("TestHodl");
+        uint256 spendLimit = 10000;
+
+        vm.prank(user1);
+        manager.setHodlVanityName(created.hodlId, vanityName);
+        
+        vm.prank(user1);
+        manager.setHodlSpendLimit(created.hodlId, spendLimit);
+
+        // Get hodl group
+        HodlGroup memory hodlGroup = manager.getHodlGroup(created.hodlId);
+
+        // Verify hodl group data
+        assertEq(hodlGroup.id, created.hodlId, "Hodl ID should match");
+        assertEq(hodlGroup.vanityName, vanityName, "Vanity name should match");
+        assertEq(hodlGroup.spendLimit, spendLimit, "Spend limit should match");
+        assertEq(hodlGroup.users.length, 1, "Should have 1 user");
+        assertEq(hodlGroup.users[0].userAddress, user1, "User address should match");
+        assertEq(hodlGroup.users[0].eid, USER1_EID, "User EID should match");
+    }
+
+    function testAnyUserCanUpdateHodlSettings() public {
+        // Create hodl and add another user
+        CreateHodl memory createParams = CreateHodl({
+            initialUser: user1,
+            initialUserEid: USER1_EID
+        });
+        HodlCreated memory created = manager.createHodl(createParams);
+
+        AddUserToHodl memory addParams = AddUserToHodl({
+            hodlId: created.hodlId,
+            newUser: user2,
+            invitingUser: user1,
+            newUserEid: USER2_EID
+        });
+        vm.prank(user1);
+        manager.addUserToHodl(addParams);
+
+        // Both user1 and user2 should be able to update settings
+        bytes32 vanityName1 = bytes32("User1Name");
+        bytes32 vanityName2 = bytes32("User2Name");
+        uint256 spendLimit1 = 1000;
+        uint256 spendLimit2 = 2000;
+
+        // User1 sets vanity name
+        vm.prank(user1);
+        manager.setHodlVanityName(created.hodlId, vanityName1);
+
+        // User2 changes vanity name
+        vm.prank(user2);
+        manager.setHodlVanityName(created.hodlId, vanityName2);
+
+        // User2 sets spend limit
+        vm.prank(user2);
+        manager.setHodlSpendLimit(created.hodlId, spendLimit1);
+
+        // User1 changes spend limit
+        vm.prank(user1);
+        manager.setHodlSpendLimit(created.hodlId, spendLimit2);
+
+        // Verify final values
+        assertEq(manager.getHodlGroup(created.hodlId).vanityName, vanityName2, "Should have user2's vanity name");
+        assertEq(manager.getHodlGroup(created.hodlId).spendLimit, spendLimit2, "Should have user1's spend limit");
     }
 }

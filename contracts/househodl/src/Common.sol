@@ -6,10 +6,25 @@ struct Share {
     uint256 percentageInBasisPoints;
 }
 
+struct User {
+    address userAddress;
+    uint32 eid; // original chain
+    uint256 trackedBalUsd;
+    uint256 realDebtUsd;
+    uint256 heldUsd;
+}
+
+struct HodlGroup {
+    bytes12 id;
+    User[] users;
+    bytes32 vanityName;
+    uint256 spendLimit;
+}
+
 struct Transaction {
     uint256 amountUsd;
     Share[] shares;
-    address orignatingUser;
+    address originatingUser;
     // Unix time (seconds) when this transaction was recorded. Use block.timestamp cast to uint48 for gas efficiency.
     uint48 createdAt;
 }
@@ -19,6 +34,7 @@ struct TransactionInstruction {
     address to;
     address from;
     uint32 destChainId;
+    uint256 amountUsd;
 }
 
 // TODO: Create enum repersenting all the chains that we work on

@@ -19,7 +19,7 @@ struct CreateHodl {
 }
 
 struct HodlCreated {
-    bytes12 hodleId;
+    bytes12 hodlId;
 }
 
 struct AddUserToHodl {

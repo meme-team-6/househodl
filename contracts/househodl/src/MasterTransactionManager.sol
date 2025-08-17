@@ -2,8 +2,10 @@
 pragma solidity ^0.8.13;
 
 import { OApp, MessagingFee, Origin } from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
-import { CreateHodl, HodlCreated, AddUserToHodl } from "./Messages.sol";
+import { CreateHodl, HodlCreated, AddUserToHodl, SubmitTransaction } from "./Messages.sol";
 import { StorageUnit } from "./StorageUnit.sol";
+import { Transaction, TransactionInstruction, User, HodlGroup } from "./Common.sol";
+import { TransactionProcessor } from "./TransactionProcessor.sol";
 
 contract MasterTransactionManager is OApp {
     StorageUnit public storageUnit;
@@ -11,6 +13,33 @@ contract MasterTransactionManager is OApp {
     uint16 internal constant SEND = 1;
     
     error InvalidStorageUnit();
+
+    event TransactionSubmitted(
+        bytes32 indexed transactionId,
+        bytes12 indexed hodlId,
+        address indexed submittingUser,
+        uint256 amountUsd,
+        uint32 userEid
+    );
+
+    event TransactionsProcessed(
+        bytes32[] transactionIds,
+        uint256 processedCount
+    );
+
+    event HodlVanityNameUpdated(
+        bytes12 indexed hodlId,
+        address indexed updatedBy,
+        bytes32 oldName,
+        bytes32 newName
+    );
+
+    event HodlSpendLimitUpdated(
+        bytes12 indexed hodlId,
+        address indexed updatedBy,
+        uint256 oldLimit,
+        uint256 newLimit
+    );
 
     struct UserWithEid {
         address user;
@@ -39,21 +68,158 @@ contract MasterTransactionManager is OApp {
         storageUnit.createHodl(newHodlId, params.initialUser, params.initialUserEid);
 
         return HodlCreated({
-            hodleId: newHodlId
+            hodlId: newHodlId
         });
     }
 
     function addUserToHodl(AddUserToHodl memory params) public {
         // Only the first user can add new users
-        address[] memory users = storageUnit.getHodlUsers(params.hodlId);
+        User[] memory users = storageUnit.getHodlUsers(params.hodlId);
         require(users.length > 0, "Hodl does not exist");
-        require(users[0] == msg.sender, "Only the first user can add new users");
+        require(users[0].userAddress == msg.sender, "Only the first user can add new users");
         require(params.newUser != address(0), "New user cannot be zero address");
         require(params.invitingUser != address(0), "Inviting user cannot be zero address");
 
         // Add the new user to the hodl
         storageUnit.addUserToHodl(params.hodlId, params.newUser, params.newUserEid);
     }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Transaction Management Functions
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function submitTransaction(SubmitTransaction memory params) external returns (bytes32) {
+        require(params.transaction.originatingUser == msg.sender, "Only originating user can submit");
+        
+        User[] memory hodlUsers = storageUnit.getHodlUsers(params.hodlId);
+        require(hodlUsers.length > 0, "Hodl does not exist");
+        
+        bool userInHodl = false;
+        for (uint256 i = 0; i < hodlUsers.length; i++) {
+            if (hodlUsers[i].userAddress == msg.sender) {
+                userInHodl = true;
+                break;
+            }
+        }
+        require(userInHodl, "User not part of hodl");
+
+        bytes32 transactionId = keccak256(
+            abi.encodePacked(
+                params.hodlId,
+                msg.sender,
+                params.transaction.amountUsd,
+                block.timestamp,
+                block.number
+            )
+        );
+
+        storageUnit.addPendingTransaction(
+            transactionId,
+            params.hodlId,
+            params.transaction,
+            msg.sender,
+            params.userEid
+        );
+
+        emit TransactionSubmitted(
+            transactionId,
+            params.hodlId,
+            msg.sender,
+            params.transaction.amountUsd,
+            params.userEid
+        );
+
+        return transactionId;
+    }
+
+    function findAndProcessExpiredTransactions() external returns (uint256 processedCount) {
+        bytes32[] memory expiredIds = TransactionProcessor.findExpiredTransactions(storageUnit);
+        
+        if (expiredIds.length == 0) {
+            return 0;
+        }
+
+        // Process expired transactions (stub implementation for now)
+        // In a full implementation, this would create TransactionInstructions
+        // and send them to other chains for processing
+
+        for (uint256 i = 0; i < expiredIds.length; i++) {
+            storageUnit.removePendingTransaction(expiredIds[i]);
+        }
+
+        emit TransactionsProcessed(expiredIds, expiredIds.length);
+        
+        return expiredIds.length;
+    }
+
+    function getPendingTransactionCount() external view returns (uint256) {
+        return storageUnit.getPendingTransactionCount();
+    }
+
+    function getPendingTransaction(bytes32 transactionId) external view returns (StorageUnit.PendingTransaction memory) {
+        return storageUnit.getPendingTransaction(transactionId);
+    }
+
+    function listPendingTransactions(bytes12 hodlId) external view returns (StorageUnit.PendingTransaction[] memory) {
+        uint256 count = storageUnit.getPendingTransactionCount();
+        StorageUnit.PendingTransaction[] memory transactions = new StorageUnit.PendingTransaction[](count);
+        
+        for (uint256 i = 0; i < count; i++) {
+            StorageUnit.PendingTransaction memory pending = storageUnit.getPendingTransactionByIndex(i);
+            if (pending.hodlId == hodlId) {
+                transactions[i] = pending;
+            }
+        }
+        
+        return transactions;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Hodl Management Functions
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    function setHodlVanityName(bytes12 hodlId, bytes32 vanityName) external {
+        User[] memory hodlUsers = storageUnit.getHodlUsers(hodlId);
+        require(hodlUsers.length > 0, "Hodl does not exist");
+        
+        bool userInHodl = false;
+        for (uint256 i = 0; i < hodlUsers.length; i++) {
+            if (hodlUsers[i].userAddress == msg.sender) {
+                userInHodl = true;
+                break;
+            }
+        }
+        require(userInHodl, "Only hodl members can update vanity name");
+
+        bytes32 oldName = storageUnit.getHodlVanityName(hodlId);
+        storageUnit.setHodlVanityName(hodlId, vanityName);
+
+        emit HodlVanityNameUpdated(hodlId, msg.sender, oldName, vanityName);
+    }
+
+    function setHodlSpendLimit(bytes12 hodlId, uint256 spendLimit) external {
+        User[] memory hodlUsers = storageUnit.getHodlUsers(hodlId);
+        require(hodlUsers.length > 0, "Hodl does not exist");
+        
+        bool userInHodl = false;
+        for (uint256 i = 0; i < hodlUsers.length; i++) {
+            if (hodlUsers[i].userAddress == msg.sender) {
+                userInHodl = true;
+                break;
+            }
+        }
+        require(userInHodl, "Only hodl members can update spend limit");
+
+        uint256 oldLimit = storageUnit.getHodlSpendLimit(hodlId);
+        storageUnit.setHodlSpendLimit(hodlId, spendLimit);
+
+        emit HodlSpendLimitUpdated(hodlId, msg.sender, oldLimit, spendLimit);
+    }
+
+    function getHodlGroup(bytes12 hodlId) external view returns (HodlGroup memory) {
+        return storageUnit.getHodlGroup(hodlId);
+    }
+
 
     // ──────────────────────────────────────────────────────────────────────────────
     // Public read functions - exposing StorageUnit functions
@@ -63,31 +229,17 @@ contract MasterTransactionManager is OApp {
         return storageUnit.getHodlCount();
     }
 
-    function getHodlUsers(bytes12 hodlId) external view returns (address[] memory) {
+    function getHodlUsers(bytes12 hodlId) external view returns (User[] memory) {
         return storageUnit.getHodlUsers(hodlId);
     }
 
-    function mapUserToEid(address user) external view returns (uint32) {
-        return storageUnit.mapUserToEid(user);
+    function getHodlUsersAddresses(bytes12 hodlId) external view returns (address[] memory) {
+        return storageUnit.getHodlUserAddresses(hodlId);
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
     // Convenience functions for reading data
     // ──────────────────────────────────────────────────────────────────────────────
-
-    function getHodlUsersWithEid(bytes12 hodlId) external view returns (UserWithEid[] memory) {
-        address[] memory users = storageUnit.getHodlUsers(hodlId);
-        UserWithEid[] memory usersWithEid = new UserWithEid[](users.length);
-        
-        for (uint256 i = 0; i < users.length; i++) {
-            usersWithEid[i] = UserWithEid({
-                user: users[i],
-                eid: storageUnit.mapUserToEid(users[i])
-            });
-        }
-        
-        return usersWithEid;
-    }
 
     function getUserHodls(address user) external view returns (bytes12[] memory) {
         uint256 hodlCount = storageUnit.getHodlCount();
@@ -96,10 +248,10 @@ contract MasterTransactionManager is OApp {
         
         for (uint256 i = 0; i < hodlCount; i++) {
             bytes12 hodlId = bytes12(uint96(i));
-            address[] memory users = storageUnit.getHodlUsers(hodlId);
+            User[] memory users = storageUnit.getHodlUsers(hodlId);
             
             for (uint256 j = 0; j < users.length; j++) {
-                if (users[j] == user) {
+                if (users[j].userAddress == user) {
                     tempHodls[userHodlCount] = hodlId;
                     userHodlCount++;
                     break;
@@ -213,15 +365,8 @@ contract MasterTransactionManager is OApp {
         address /*_executor*/,
         bytes calldata /*_extraData*/
     ) internal override {
-        // 1. Decode the incoming bytes into a string
-        //    You can use abi.decode, abi.decodePacked, or directly splice bytes
-        //    if you know the format of your data structures
-        string memory _string = abi.decode(_message, (string));
-
-        // 2. Apply your custom logic. In this example, store it in `lastMessage`.
-
-        // 3. (Optional) Trigger further on-chain actions.
-        //    e.g., emit an event, mint tokens, call another contract, etc.
-        //    emit MessageReceived(_origin.srcEid, _string);
+        // Decode the incoming bytes into a string
+        abi.decode(_message, (string));
+        // Custom logic would go here
     }
 }
