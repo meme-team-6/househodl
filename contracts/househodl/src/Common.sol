@@ -8,7 +8,7 @@ struct Share {
 
 struct User {
     address userAddress;
-    uint32 eid; // original chain
+    uint32 chainId; // original chain
     uint256 trackedBalUsd;
     uint256 realDebtUsd;
     uint256 heldUsd;

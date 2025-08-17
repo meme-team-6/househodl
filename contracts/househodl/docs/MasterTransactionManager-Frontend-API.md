@@ -36,7 +36,7 @@ Represents a user in the system with their financial tracking data.
 ```solidity
 struct User {
     address userAddress;    // User's wallet address
-    uint32 eid;            // Original endpoint ID (chain ID)
+    uint32 chainId;            // Original endpoint ID (chain ID)
     uint256 trackedBalUsd; // Tracked balance in USD (6 decimals)
     uint256 realDebtUsd;   // Real debt in USD (6 decimals)
     uint256 heldUsd;       // Held amount in USD (6 decimals)
@@ -88,7 +88,7 @@ struct PendingTransaction {
     address originatingUser;      // Who created the transaction
     uint48 transactionCreatedAt;  // When transaction was created
     address submittingUser;       // Who submitted to the chain
-    uint32 userEid;              // Submitter's endpoint ID
+    uint32 userChainId;              // Submitter's endpoint ID
     uint48 submittedAt;          // When submitted to chain
 }
 ```
@@ -104,7 +104,7 @@ event TransactionSubmitted(
     bytes12 indexed hodlId,
     address indexed submittingUser,
     uint256 amountUsd,
-    uint32 userEid
+    uint32 userChainId
 );
 ```
 
@@ -151,7 +151,7 @@ Creates a new hodl group.
 
 **Parameters:**
 - `params.initialUser`: Address of the hodl creator (must be msg.sender)
-- `params.initialUserEid`: Endpoint ID of the creator's chain
+- `params.initialUserChainId`: Endpoint ID of the creator's chain
 
 **Returns:** `HodlCreated` struct with the new hodl ID
 
@@ -159,7 +159,7 @@ Creates a new hodl group.
 ```javascript
 const createParams = {
     initialUser: "0x...", // Your wallet address
-    initialUserEid: 101   // Ethereum mainnet EID
+    initialUserChainId: 101   // Ethereum mainnet CHAIN_ID
 };
 const result = await contract.createHodl(createParams);
 const hodlId = result.hodlId;
@@ -172,7 +172,7 @@ Adds a new user to an existing hodl. Only the hodl creator can add users.
 - `params.hodlId`: ID of the hodl to add user to
 - `params.newUser`: Address of the user to add
 - `params.invitingUser`: Address of the inviting user (for validation)
-- `params.newUserEid`: Endpoint ID of the new user's chain
+- `params.newUserChainId`: Endpoint ID of the new user's chain
 
 **Example:**
 ```javascript
@@ -180,7 +180,7 @@ const addParams = {
     hodlId: "0x...",
     newUser: "0x...",
     invitingUser: "0x...", // Your address
-    newUserEid: 102
+    newUserChainId: 102
 };
 await contract.addUserToHodl(addParams);
 ```
@@ -221,7 +221,7 @@ Submits a new transaction to the hodl. Returns the transaction ID.
 **Parameters:**
 - `params.hodlId`: ID of the hodl
 - `params.transaction`: Transaction details
-- `params.userEid`: Submitter's endpoint ID
+- `params.userChainId`: Submitter's endpoint ID
 
 **Returns:** Transaction ID (bytes32)
 
@@ -248,7 +248,7 @@ const transaction = {
 const params = {
     hodlId: "0x...",
     transaction: transaction,
-    userEid: 101
+    userChainId: 101
 };
 
 const txId = await contract.submitTransaction(params);
@@ -347,7 +347,7 @@ Gets total number of hodls created.
 // 1. Create hodl
 const createParams = {
     initialUser: await signer.getAddress(),
-    initialUserEid: 101 // Ethereum
+    initialUserChainId: 101 // Ethereum
 };
 const created = await contract.createHodl(createParams);
 const hodlId = created.hodlId;
@@ -365,7 +365,7 @@ const addUser1 = {
     hodlId: hodlId,
     newUser: "0x...", // Team member 1
     invitingUser: await signer.getAddress(),
-    newUserEid: 101
+    newUserChainId: 101
 };
 await contract.addUserToHodl(addUser1);
 ```
@@ -390,7 +390,7 @@ const transaction = {
 const submitParams = {
     hodlId: "0x...",
     transaction: transaction,
-    userEid: 101
+    userChainId: 101
 };
 
 const txId = await contract.submitTransaction(submitParams);
@@ -401,7 +401,7 @@ console.log("Transaction submitted with ID:", txId);
 
 ```javascript
 // Listen for new transactions
-contract.on("TransactionSubmitted", (txId, hodlId, submitter, amount, userEid) => {
+contract.on("TransactionSubmitted", (txId, hodlId, submitter, amount, userChainId) => {
     console.log("New transaction:", {
         id: txId,
         hodl: hodlId,

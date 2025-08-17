@@ -19,7 +19,7 @@ contract StorageUnit is Ownable {
         address originatingUser;
         uint48 transactionCreatedAt;
         address submittingUser;
-        uint32 userEid;
+        uint32 userChainId;
         uint48 submittedAt;
     }
 
@@ -52,7 +52,7 @@ contract StorageUnit is Ownable {
         return hodlGroups.length;
     }
 
-    function createHodl(bytes12 id, address initialUser, uint32 initialUserEid) external onlyTransactionManager {
+    function createHodl(bytes12 id, address initialUser, uint32 initialUserChainId) external onlyTransactionManager {
         StoredHodlGroup memory newStoredHodl = StoredHodlGroup({
             id: id,
             vanityName: bytes32(0),
@@ -62,7 +62,7 @@ contract StorageUnit is Ownable {
 
         User memory initialUserStruct = User({
             userAddress: initialUser,
-            eid: initialUserEid,
+            chainId: initialUserChainId,
             trackedBalUsd: 0,
             realDebtUsd: 0,
             heldUsd: 0
@@ -71,13 +71,13 @@ contract StorageUnit is Ownable {
         hodlUsers[id].push(initialUserStruct);
     }
 
-    function addUserToHodl(bytes12 hodlId, address newUser, uint32 newUserChainEid) external onlyTransactionManager {
+    function addUserToHodl(bytes12 hodlId, address newUser, uint32 newUserChainChainId) external onlyTransactionManager {
         uint96 index = uint96(hodlId);
         require(index < hodlGroups.length, "Hodl does not exist");
         
         User memory newUserStruct = User({
             userAddress: newUser,
-            eid: newUserChainEid,
+            chainId: newUserChainChainId,
             trackedBalUsd: 0,
             realDebtUsd: 0,
             heldUsd: 0
@@ -150,7 +150,7 @@ contract StorageUnit is Ownable {
         bytes12 hodlId,
         Transaction memory transaction,
         address submittingUser,
-        uint32 userEid
+        uint32 userChainId
     ) external onlyTransactionManager {
         PendingTransaction memory newPending = PendingTransaction({
             id: transactionId,
@@ -159,7 +159,7 @@ contract StorageUnit is Ownable {
             originatingUser: transaction.originatingUser,
             transactionCreatedAt: transaction.createdAt,
             submittingUser: submittingUser,
-            userEid: userEid,
+            userChainId: userChainId,
             submittedAt: uint48(block.timestamp)
         });
         

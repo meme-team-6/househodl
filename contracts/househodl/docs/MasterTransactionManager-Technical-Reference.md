@@ -125,7 +125,7 @@ class HodlWatcher {
     
     startWatching() {
         // Watch for new transactions
-        this.contract.on("TransactionSubmitted", (txId, hodlId, submitter, amount, userEid) => {
+        this.contract.on("TransactionSubmitted", (txId, hodlId, submitter, amount, userChainId) => {
             if (hodlId === this.hodlId) {
                 this.emit('newTransaction', { txId, submitter, amount: weiToDollar(amount) });
             }
@@ -423,7 +423,7 @@ function generateMockHodl(id = "0x000000000000000000000001") {
         users: [
             {
                 userAddress: "0x1234567890123456789012345678901234567890",
-                eid: 101,
+                chainId: 101,
                 trackedBalUsd: dollarToWei(1000),
                 realDebtUsd: dollarToWei(500),
                 heldUsd: dollarToWei(250)
@@ -446,7 +446,7 @@ function generateMockTransaction(hodlId, amount = 100) {
             originatingUser: "0x1234567890123456789012345678901234567890",
             createdAt: Math.floor(Date.now() / 1000)
         },
-        userEid: 101
+        userChainId: 101
     };
 }
 ```

@@ -15,7 +15,7 @@ enum MessageType {
 
 struct CreateHodl {
     address initialUser;
-    uint32 initialUserEid;
+    uint32 initialUserChainId;
 }
 
 struct HodlCreated {
@@ -26,13 +26,13 @@ struct AddUserToHodl {
     address newUser;
     address invitingUser;
     bytes12 hodlId;
-    uint32 newUserEid;
+    uint32 newUserChainId;
 }
 
 struct SubmitTransaction {
     bytes12 hodlId;
     Transaction transaction;
-    uint32 userEid;
+    uint32 userChainId;
 }
 
 struct ReconcileTransaction {

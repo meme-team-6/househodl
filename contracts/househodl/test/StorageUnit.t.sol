@@ -56,7 +56,7 @@ contract StorageUnitTest is Test {
         User[] memory users = storageUnit.getHodlUsers(hodlId);
         assertEq(users.length, 1, "Hodl should have 1 user");
         assertEq(users[0].userAddress, user1, "User should be user1");
-        assertEq(users[0].eid, chainId1, "User chain ID should be set");
+        assertEq(users[0].chainId, chainId1, "User chain ID should be set");
     }
 
     function testCreateHodl_RevertWhenNotTransactionManager() public {
@@ -82,7 +82,7 @@ contract StorageUnitTest is Test {
         assertEq(users.length, 2, "Hodl should have 2 users");
         assertEq(users[0].userAddress, user1, "First user should be user1");
         assertEq(users[1].userAddress, user2, "Second user should be user2");
-        assertEq(users[1].eid, chainId2, "User2 chain ID should be set");
+        assertEq(users[1].chainId, chainId2, "User2 chain ID should be set");
     }
 
     function testAddUserToHodl_RevertWhenNotTransactionManager() public {

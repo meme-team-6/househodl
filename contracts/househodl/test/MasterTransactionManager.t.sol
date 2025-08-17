@@ -18,10 +18,10 @@ contract MasterTransactionManagerFixedTest is Test {
     address public user3 = address(0x4);
     address public user4 = address(0x5);
     
-    uint32 constant USER1_EID = 101;
-    uint32 constant USER2_EID = 102;
-    uint32 constant USER3_EID = 103;
-    uint32 constant USER4_EID = 104;
+    uint32 constant USER1_CHAIN_ID = 101;
+    uint32 constant USER2_CHAIN_ID = 102;
+    uint32 constant USER3_CHAIN_ID = 103;
+    uint32 constant USER4_CHAIN_ID = 104;
 
     function setUp() public {
         // Deploy a mock endpoint address
@@ -73,7 +73,7 @@ contract MasterTransactionManagerFixedTest is Test {
     function testCreateHodl_Success() public {
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
 
         HodlCreated memory result = manager.createHodl(params);
@@ -85,13 +85,13 @@ contract MasterTransactionManagerFixedTest is Test {
         User[] memory users = storageUnit.getHodlUsers(expectedHodlId);
         assertEq(users.length, 1, "Hodl should have 1 user");
         assertEq(users[0].userAddress, user1, "User should be user1");
-        assertEq(users[0].eid, USER1_EID, "User1 EID should be set correctly");
+        assertEq(users[0].chainId, USER1_CHAIN_ID, "User1 CHAIN_ID should be set correctly");
     }
 
     function testCreateHodl_RevertWithZeroAddress() public {
         CreateHodl memory params = CreateHodl({
             initialUser: address(0),
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
 
         vm.expectRevert("Initial user cannot be zero address");
@@ -102,14 +102,14 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create first hodl
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory result1 = manager.createHodl(params1);
         
         // Create second hodl
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserEid: USER2_EID
+            initialUserChainId: USER2_CHAIN_ID
         });
         HodlCreated memory result2 = manager.createHodl(params2);
 
@@ -126,7 +126,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl first
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -135,7 +135,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
 
         vm.prank(user1); // Only first user can add new users
@@ -145,14 +145,14 @@ contract MasterTransactionManagerFixedTest is Test {
         assertEq(users.length, 2, "Hodl should have 2 users");
         assertEq(users[0].userAddress, user1, "First user should be user1");
         assertEq(users[1].userAddress, user2, "Second user should be user2");
-        assertEq(users[1].eid, USER2_EID, "User2 EID should be set correctly");
+        assertEq(users[1].chainId, USER2_CHAIN_ID, "User2 CHAIN_ID should be set correctly");
     }
 
     function testAddUserToHodl_RevertWhenNotFirstUser() public {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -161,7 +161,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
 
         vm.expectRevert("Only the first user can add new users");
@@ -176,7 +176,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: nonExistentHodlId,
             newUser: user2,
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
 
         vm.expectRevert("Hodl does not exist");
@@ -188,7 +188,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -196,7 +196,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created.hodlId,
             newUser: address(0),
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
 
         vm.expectRevert("New user cannot be zero address");
@@ -208,7 +208,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -216,7 +216,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created.hodlId,
             newUser: user2,
             invitingUser: address(0),
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
 
         vm.expectRevert("Inviting user cannot be zero address");
@@ -234,7 +234,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create a hodl
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         manager.createHodl(params);
 
@@ -245,7 +245,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -259,7 +259,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
         vm.prank(user1);
         manager.addUserToHodl(addParams);
@@ -271,16 +271,16 @@ contract MasterTransactionManagerFixedTest is Test {
         assertEq(users[1], user2, "Second user should be user2");
     }
 
-    function testMapUserToEid() public {
+    function testMapUserToChainId() public {
         // Create hodl
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory result = manager.createHodl(params);
 
         // Test mapped user
-        assertEq(manager.getHodlUsers(result.hodlId)[0].eid, USER1_EID, "Should return correct EID for mapped user");
+        assertEq(manager.getHodlUsers(result.hodlId)[0].chainId, USER1_CHAIN_ID, "Should return correct CHAIN_ID for mapped user");
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -291,14 +291,14 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create first hodl with user1
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created1 = manager.createHodl(params1);
 
         // Create second hodl with user2
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserEid: USER2_EID
+            initialUserChainId: USER2_CHAIN_ID
         });
         manager.createHodl(params2);
 
@@ -316,14 +316,14 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create first hodl with user1
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created1 = manager.createHodl(params1);
 
         // Create second hodl with user2
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserEid: USER2_EID
+            initialUserChainId: USER2_CHAIN_ID
         });
         HodlCreated memory created2 = manager.createHodl(params2);
 
@@ -332,7 +332,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created2.hodlId,
             newUser: user1,
             invitingUser: user2,
-            newUserEid: USER1_EID
+            newUserChainId: USER1_CHAIN_ID
         });
         vm.prank(user2);
         manager.addUserToHodl(addParams);
@@ -362,19 +362,19 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create multiple hodls
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created1 = manager.createHodl(params1);
 
         CreateHodl memory params2 = CreateHodl({
             initialUser: user2,
-            initialUserEid: USER2_EID
+            initialUserChainId: USER2_CHAIN_ID
         });
         manager.createHodl(params2);
 
         CreateHodl memory params3 = CreateHodl({
             initialUser: user3,
-            initialUserEid: USER3_EID
+            initialUserChainId: USER3_CHAIN_ID
         });
         manager.createHodl(params3);
 
@@ -383,7 +383,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created1.hodlId,
             newUser: user4,
             invitingUser: user1,
-            newUserEid: USER4_EID
+            newUserChainId: USER4_CHAIN_ID
         });
         vm.prank(user1);
         manager.addUserToHodl(addParams1);
@@ -393,7 +393,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: hodl3Id,
             newUser: user4,
             invitingUser: user3,
-            newUserEid: USER4_EID
+            newUserChainId: USER4_CHAIN_ID
         });
         vm.prank(user3);
         manager.addUserToHodl(addParams3);
@@ -414,7 +414,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // For now, just test that the limit exists
         CreateHodl memory params = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         
         // This should succeed for a normal number
@@ -428,7 +428,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Hodl 1: user1 creates, adds user2
         CreateHodl memory params1 = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created1 = manager.createHodl(params1);
 
@@ -436,7 +436,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created1.hodlId,
             newUser: user2,
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
         vm.prank(user1);
         manager.addUserToHodl(addParams1);
@@ -444,7 +444,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Hodl 2: user3 creates, adds user1 and user4
         CreateHodl memory params2 = CreateHodl({
             initialUser: user3,
-            initialUserEid: USER3_EID
+            initialUserChainId: USER3_CHAIN_ID
         });
         HodlCreated memory created2 = manager.createHodl(params2);
 
@@ -452,7 +452,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created2.hodlId,
             newUser: user1,
             invitingUser: user3,
-            newUserEid: USER1_EID
+            newUserChainId: USER1_CHAIN_ID
         });
         vm.prank(user3);
         manager.addUserToHodl(addParams2);
@@ -461,7 +461,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created2.hodlId,
             newUser: user4,
             invitingUser: user3,
-            newUserEid: USER4_EID
+            newUserChainId: USER4_CHAIN_ID
         });
         vm.prank(user3);
         manager.addUserToHodl(addParams3);
@@ -502,7 +502,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl and add users
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -523,7 +523,7 @@ contract MasterTransactionManagerFixedTest is Test {
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
             transaction: transaction,
-            userEid: USER1_EID
+            userChainId: USER1_CHAIN_ID
         });
 
         // Submit transaction
@@ -538,14 +538,14 @@ contract MasterTransactionManagerFixedTest is Test {
         assertEq(pending.amountUsd, 1000, "Amount should match");
         assertEq(pending.originatingUser, user1, "Originating user should match");
         assertEq(pending.submittingUser, user1, "Submitting user should match");
-        assertEq(pending.userEid, USER1_EID, "User EID should match");
+        assertEq(pending.userChainId, USER1_CHAIN_ID, "User CHAIN_ID should match");
     }
 
     function testSubmitTransaction_RevertWhenUserNotInHodl() public {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -566,7 +566,7 @@ contract MasterTransactionManagerFixedTest is Test {
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
             transaction: transaction,
-            userEid: USER2_EID
+            userChainId: USER2_CHAIN_ID
         });
 
         // Should revert because user2 is not in the hodl
@@ -579,7 +579,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -600,7 +600,7 @@ contract MasterTransactionManagerFixedTest is Test {
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
             transaction: transaction,
-            userEid: USER1_EID
+            userChainId: USER1_CHAIN_ID
         });
 
         // Should revert because originating user doesn't match
@@ -618,7 +618,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl and submit transaction
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -638,7 +638,7 @@ contract MasterTransactionManagerFixedTest is Test {
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
             transaction: transaction,
-            userEid: USER1_EID
+            userChainId: USER1_CHAIN_ID
         });
 
         vm.prank(user1);
@@ -657,7 +657,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -678,7 +678,7 @@ contract MasterTransactionManagerFixedTest is Test {
         SubmitTransaction memory submitParams = SubmitTransaction({
             hodlId: created.hodlId,
             transaction: transaction,
-            userEid: USER1_EID
+            userChainId: USER1_CHAIN_ID
         });
 
         // Check that TransactionSubmitted event is emitted with correct parameters
@@ -688,7 +688,7 @@ contract MasterTransactionManagerFixedTest is Test {
             created.hodlId,
             user1,
             1500,
-            USER1_EID
+            USER1_CHAIN_ID
         );
 
         vm.prank(user1);
@@ -703,7 +703,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -730,7 +730,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -746,7 +746,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -773,7 +773,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl with user1
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -789,7 +789,7 @@ contract MasterTransactionManagerFixedTest is Test {
         // Create hodl
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -812,14 +812,14 @@ contract MasterTransactionManagerFixedTest is Test {
         assertEq(hodlGroup.spendLimit, spendLimit, "Spend limit should match");
         assertEq(hodlGroup.users.length, 1, "Should have 1 user");
         assertEq(hodlGroup.users[0].userAddress, user1, "User address should match");
-        assertEq(hodlGroup.users[0].eid, USER1_EID, "User EID should match");
+        assertEq(hodlGroup.users[0].chainId, USER1_CHAIN_ID, "User CHAIN_ID should match");
     }
 
     function testAnyUserCanUpdateHodlSettings() public {
         // Create hodl and add another user
         CreateHodl memory createParams = CreateHodl({
             initialUser: user1,
-            initialUserEid: USER1_EID
+            initialUserChainId: USER1_CHAIN_ID
         });
         HodlCreated memory created = manager.createHodl(createParams);
 
@@ -827,7 +827,7 @@ contract MasterTransactionManagerFixedTest is Test {
             hodlId: created.hodlId,
             newUser: user2,
             invitingUser: user1,
-            newUserEid: USER2_EID
+            newUserChainId: USER2_CHAIN_ID
         });
         vm.prank(user1);
         manager.addUserToHodl(addParams);

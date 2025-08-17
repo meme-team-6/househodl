@@ -12,7 +12,7 @@ contract MessageTest is Test {
     function testEncoding() public pure {
         CreateHodl memory createHodl = CreateHodl({
             initialUser: address(0x123),
-            initialUserEid: 456
+            initialUserChainId: 456
         });
 
         bytes memory encoded = MessageEncoder.encodeCreateHodl(createHodl);
@@ -21,6 +21,6 @@ contract MessageTest is Test {
         assert(tp == MessageType.CREATE_HOLD);
         CreateHodl memory decoded = MessageEncoder.asCreateHodl(encoded);
         assert(decoded.initialUser == createHodl.initialUser);
-        assert(decoded.initialUserEid == createHodl.initialUserEid);
+        assert(decoded.initialUserChainId == createHodl.initialUserChainId);
     }
 }

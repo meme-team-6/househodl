@@ -43,13 +43,9 @@ contract MasterTransactionManager is OApp {
 
     struct UserWithEid {
         address user;
-        uint32 eid;
+        uint32 chainId;
     }
 
-    struct HodlInfo {
-        bytes12 id;
-        UserWithEid[] users;
-    }
 
     constructor(address _endpoint, address _owner, address _storageUnit)
         OApp(_endpoint, _owner)
@@ -66,7 +62,7 @@ contract MasterTransactionManager is OApp {
 
         bytes12 newHodlId = bytes12(uint96(hodlCount));
 
-        storageUnit.createHodl(newHodlId, params.initialUser, params.initialUserEid);
+        storageUnit.createHodl(newHodlId, params.initialUser, params.initialUserChainId);
 
         return HodlCreated({
             hodlId: newHodlId
@@ -82,7 +78,7 @@ contract MasterTransactionManager is OApp {
         require(params.invitingUser != address(0), "Inviting user cannot be zero address");
 
         // Add the new user to the hodl
-        storageUnit.addUserToHodl(params.hodlId, params.newUser, params.newUserEid);
+        storageUnit.addUserToHodl(params.hodlId, params.newUser, params.newUserChainId);
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -119,7 +115,7 @@ contract MasterTransactionManager is OApp {
             params.hodlId,
             params.transaction,
             msg.sender,
-            params.userEid
+            params.userChainId
         );
 
         emit TransactionSubmitted(
@@ -127,7 +123,7 @@ contract MasterTransactionManager is OApp {
             params.hodlId,
             msg.sender,
             params.transaction.amountUsd,
-            params.userEid
+            params.userChainId
         );
 
         return transactionId;
