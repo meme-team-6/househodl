@@ -33,6 +33,8 @@ import { Separator } from "./components/ui/separator";
 import { useHodl } from "./hooks/useHodl";
 import { useHodlPendingTransactions } from "./hooks/useHodlPendingTransactions";
 import { useCreateTransaction } from "./hooks/useCreateTransaction";
+import { useAddUserToHodl } from "./hooks/useAddUserToHodl";
+import { masterTransactionManagerChainId } from "./abis/MasterTransactionManager";
 
 // Mock data - in real app this would come from API based on id
 const defaultAvatars = [
@@ -129,6 +131,8 @@ const GroupManagement = () => {
   const { transactions: upcomingExpenses } = useHodlPendingTransactions(
     id || ""
   );
+
+  const { addUserToHodl } = useAddUserToHodl(id || "");
 
   const { createTransaction } = useCreateTransaction(id || "");
   const [showExpenseModal, setShowExpenseModal] = useState(false);
@@ -239,12 +243,20 @@ const GroupManagement = () => {
   };
 
   const handleInviteSubmit = () => {
-    const emails = inviteEmails
+    const addresses = inviteAddresses
       .split(",")
       .map((email) => email.trim())
       .filter((email) => email);
 
-    // TODO: Send emails, add addresses
+    const handle = async () => {
+      for (const address of addresses) {
+        addUserToHodl({
+          newUserAddress: address,
+          newUserChainId: String(masterTransactionManagerChainId),
+        });
+      }
+    };
+    handle();
   };
 
   const resetInviteModal = () => {

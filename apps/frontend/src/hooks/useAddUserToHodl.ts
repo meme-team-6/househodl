@@ -18,10 +18,10 @@ export const useAddUserToHodl = (hodlId: string) => {
   const addUserToHodl = useCallback(
     async ({
       newUserAddress,
-      newUserEid,
+      newUserChainId,
     }: {
       newUserAddress: string;
-      newUserEid: string;
+      newUserChainId: string;
     }) => {
       if (!wallet || !isEthereumWallet(wallet)) {
         return;
@@ -36,7 +36,7 @@ export const useAddUserToHodl = (hodlId: string) => {
           address: masterTransactionManagerAddress,
           abi: masterTransactionManagerAbi,
           functionName: "addUserToHodl",
-          args: [newUserAddress, wallet.address, hodlId, newUserEid],
+          args: [[newUserAddress, wallet.address, hodlId, newUserChainId]],
         });
       } finally {
         setIsLoading(false);
