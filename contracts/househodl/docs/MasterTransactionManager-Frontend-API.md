@@ -152,6 +152,8 @@ Creates a new hodl group.
 **Parameters:**
 - `params.initialUser`: Address of the hodl creator (must be msg.sender)
 - `params.initialUserChainId`: Endpoint ID of the creator's chain
+- `params.vanityName`: Human-readable name for the hodl (32 bytes)
+- `params.spendLimit`: Spending limit in USD
 
 **Returns:** `HodlCreated` struct with the new hodl ID
 

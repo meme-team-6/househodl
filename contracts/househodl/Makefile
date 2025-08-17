@@ -14,15 +14,14 @@ status:
 
 # Deploy all contracts at once (recommended)
 deploy-all:
-	forge script script/DeployAll.s.sol:DeployAllScript \
-		--rpc-url $(RPC_URL) \
-		--broadcast \
-		--verify \
-		--etherscan-api-key $(ETHERSCAN_API_KEY) \
-		--retries 10 \
-		--delay 10 \
-		--account $(ACCOUNT) \
-		-vvvv
+	@echo "Starting sequential deployment..."
+	@echo "Step 1: Deploying StorageUnit..."
+	$(MAKE) deploy-storage
+	@echo "Step 2: Deploying MasterTransactionManager..."
+	$(MAKE) deploy-mtm
+	@echo "Step 3: Setting up contract connections..."
+	$(MAKE) setup
+	@echo "Deployment complete! Run 'make status' to verify."
 
 # Deploy StorageUnit only
 deploy-storage:
