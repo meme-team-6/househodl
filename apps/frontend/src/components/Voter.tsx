@@ -1,7 +1,7 @@
 import { useReverseEns } from "@/hooks/useEns";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 
-const avatar = "https://avatars.githubusercontent.com/u/23006558";
+const avatar = "https://api.dicebear.com/9.x/rings/svg";
 
 const getVoteIcon = (vote: VoteState) => {
   if (vote === VoteState.Approve)
@@ -35,11 +35,13 @@ export const Voter = ({
   return (
     <div className="flex items-center justify-between p-3 rounded-lg border">
       <div className="flex items-center gap-3">
-        <img
-          src={memberAvatar || avatar}
-          alt="avatar"
+        <object
+          data={memberAvatar || avatar}
+          type="image/png"
           className="w-8 h-8 rounded-full"
-        />
+        >
+          <img src={avatar} alt="avatar" className="w-8 h-8 rounded-full" />
+        </object>
         <span className="font-medium">{memberName}</span>
       </div>
       <div className="flex items-center gap-2">
